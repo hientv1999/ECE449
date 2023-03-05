@@ -59,7 +59,40 @@ begin
                                 
                         elsif (shift_count(3 downto 0) = "0100") then 
                             output <= X"0000" & in1(15) & in1(10 downto 0) & "0000";
-                        
+
+                        elsif (shift_count(3 downto 0) = "0101") then 
+                            output <= X"0000" & in1(15) & in1(10 downto 0) & "00000";
+
+                        elsif (shift_count(3 downto 0) = "0110") then 
+                            output <= X"0000" & in1(15) & in1(8 downto 0) & "000000";
+    
+                        elsif (shift_count(3 downto 0) = "0111") then 
+                            output <= X"0000" & in1(15) & in1(7 downto 0) & "0000000";
+    
+                        elsif (shift_count(3 downto 0) = "1000") then 
+                            output <= X"0000" & in1(15) & in1(6 downto 0) & "00000000";
+    
+                        elsif (shift_count(3 downto 0) = "1001") then 
+                            output <= X"0000" & in1(15) & in1(5 downto 0) & "000000000";
+    
+                        elsif (shift_count(3 downto 0) = "1010") then 
+                            output <= X"0000" & in1(15) & in1(4 downto 0) & "0000000000";
+    
+                        elsif (shift_count(3 downto 0) = "1011") then 
+                            output <= X"0000" & in1(15) & in1(3 downto 0) & "00000000000";
+    
+                        elsif (shift_count(3 downto 0) = "1100") then 
+                            output <= X"0000" & in1(15) & in1(2 downto 0) & "000000000000";
+    
+                        elsif (shift_count(3 downto 0) = "1101") then 
+                            output <= X"0000" & in1(15) & in1(1 downto 0) & "0000000000000";
+    
+                        elsif (shift_count(3 downto 0) = "1110") then 
+                            output <= X"0000" & in1(15) & in1(0) & "00000000000000";
+    
+                        elsif (shift_count(3 downto 0) = "1111") then 
+                            output <= X"0000" & "000000000000000";
+    output <= in1;
                         end if;
                     when "110" => --SHR (2's complement)
                         if (shift_count(3 downto 0) = "0001") then
@@ -73,7 +106,40 @@ begin
                            
                         elsif (shift_count(3 downto 0) = "0100") then
                             output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 4);
+                        
+                        elsif (shift_count(3 downto 0) = "0101") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 5);
+
+                        elsif (shift_count(3 downto 0) = "0110") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 5);
+                    
+                        elsif (shift_count(3 downto 0) = "0111") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 6);
+                
+                        elsif (shift_count(3 downto 0) = "1000") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 7);
+                
+                        elsif (shift_count(3 downto 0) = "1001") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 8);
+                
+                        elsif (shift_count(3 downto 0) = "1010") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 9);
                             
+                        elsif (shift_count(3 downto 0) = "1011") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 10);
+
+                        elsif (shift_count(3 downto 0) = "1100") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 11);
+
+                        elsif (shift_count(3 downto 0) = "1101") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 12);
+
+                        elsif (shift_count(3 downto 0) = "1110") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 13);
+
+                        elsif (shift_count(3 downto 0) = "1111") then
+                            output <= X"0000" & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(15) & in1(14 downto 14);
+
                         end if;                        
                     when "111" => --TEST
                        output <= X"0000" & in1;
