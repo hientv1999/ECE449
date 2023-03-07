@@ -18,7 +18,7 @@ entity ALU_file is
         n_flag: out std_logic;
         o_flag: out std_logic
     );
-end ALU_file;
+end ALU_file; --nothing
 
 architecture behavioural of ALU_file is
 
