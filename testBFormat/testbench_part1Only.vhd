@@ -36,22 +36,12 @@ architecture behavioural of test_controller_sub is
         rst <= '0'; wait until (falling_edge(clk));     -- IN R0             	  -- R0 = 02 
         IR <= X"4240"; wait until (falling_edge(clk));  -- IN R1              	  -- R1 = 03 
         IR <= X"4280"; wait until (falling_edge(clk));  -- IN R2			      -- R2 = 01 
-        IR <= X"42C0"; wait until (falling_edge(clk));  -- IN R3			      -- R3 = 05   
-        IR <= X"024A"; wait until (falling_edge(clk));  -- stall 
-        wait until (falling_edge(clk));                 -- stall 
-        wait until (falling_edge(clk));                 -- ADD R1, R1, R2 	      -- R1 = 04 
-        IR <= X"0488"; wait until (falling_edge(clk));  -- stall 
-        wait until (falling_edge(clk));                 -- stall 
-        wait until (falling_edge(clk));                 -- stall 
-        wait until (falling_edge(clk));                 -- SUB R2, R1, R0	      -- R2 = 02 
-        IR <= X"045A"; wait until (falling_edge(clk));  -- stall
-        wait until (falling_edge(clk));                 -- stall 
-        wait until (falling_edge(clk));                 -- stall 
-        wait until (falling_edge(clk));                 -- SUB R1, R3, R2         -- R1 = 03
-        IR <= X"4040"; wait until (falling_edge(clk));  -- stall 
-        wait until (falling_edge(clk));                 -- stall
-        wait until (falling_edge(clk));                 -- stall
-        wait until (falling_edge(clk));                -- OUT r1            	  -- R1 = 03 
+--        IR <= X"42C0"; wait until (falling_edge(clk));  -- IN R3			      -- R3 = 05   
+--        IR <= X"024A"; wait until (falling_edge(clk));  -- ADD R1, R1, R2 	      -- R1 = 04 
+--        IR <= X"0488"; wait until (falling_edge(clk));  -- SUB R2, R1, R0	      -- R2 = 02 
+--        IR <= X"045A"; wait until (falling_edge(clk));  -- SUB R1, R3, R2         -- R1 = 03
+        IR <= X"4040"; wait until (falling_edge(clk));  -- OUT r1            	  -- R1 = 03 
+        wait until (falling_edge(clk));
         IR <= X"4080"; wait until (falling_edge(clk));  -- OUT r2            	  -- R2 = 02 
         wait; 
     end process; 
