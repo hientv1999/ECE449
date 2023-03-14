@@ -39,31 +39,15 @@ architecture behavioural of test_controller_sub is
         IR <= X"4340"; wait until (falling_edge(clk));  -- IN R5			                             -- R5 = 01 
         IR <= X"4380"; wait until (falling_edge(clk));  -- IN R6			                             -- R6 = 05 
 	    IR <= X"43C0"; wait until (falling_edge(clk));  -- IN R7			                             -- R7 = 00 
-	    IR <= X"8D0A"; wait until (falling_edge(clk));  -- stall until PC updated
-	    wait until (falling_edge(clk));                 -- stall until PC updated
-	    wait until (falling_edge(clk));                 -- BR.SUB R4, 10	                             -- R7 <- PC + 2 ; PC <- R4 + 2*(10)
---	    IR <= X"8000"; wait until (falling_edge(clk));  -- stall until PC updated
---	    wait until (falling_edge(clk));                 -- stall until PC updated
---	    wait until (falling_edge(clk));                 -- BRR 0 			                             -- PC <- PC' + 2*(0) a.k.a infinite loop
+	    IR <= X"8D0A"; wait until (falling_edge(clk));  -- BR.SUB R4, 10	                             -- R7 <- PC + 2 ; PC <- R4 + 2*(10)
+	    IR <= X"8000"; wait until (falling_edge(clk));  -- BRR 0 			                             -- PC <- PC' + 2*(0) a.k.a infinite loop
         IR <= X"028D"; wait until (falling_edge(clk));  -- ADD R2, R1, R5 	                             -- R2 <- R1 + 1 = 04 
-        IR <= X"0642"; wait until (falling_edge(clk));  -- stall until updated new value of register             
-	    wait until (falling_edge(clk));                 -- stall until updated new value of register
-	    wait until (falling_edge(clk));                 -- stall until updated new value of register
-	    wait until (falling_edge(clk));                 -- MUL R1, R0, R2 	                             -- R1 = R0 * R2 = 08
+        IR <= X"0642"; wait until (falling_edge(clk));  -- MUL R1, R0, R2 	                             -- R1 = R0 * R2 = 08
 	    IR <= X"05B5"; wait until (falling_edge(clk));  -- SUB R6, R6, R5	                             -- R6 <- R6 - 1 = 04
-	    IR <= X"0F80"; wait until (falling_edge(clk));  -- stall until updated new value of register
-	    wait until (falling_edge(clk));                 -- stall until updated new value of register
-	    wait until (falling_edge(clk));                 -- stall until updated new value of register
-        wait until (falling_edge(clk));      		    -- TEST R6                                       -- set z flag for branch 
-        IR <= X"8402"; wait until (falling_edge(clk));  -- stall until PC updated
-        wait until (falling_edge(clk));                 -- stall until PC updated
-	    wait until (falling_edge(clk));                 -- BRR.z 2                                       -- branch if r6 = 0 
-        IR <= X"81FB"; wait until (falling_edge(clk));  -- stall until PC updated
-        wait until (falling_edge(clk));                 -- stall until PC updated
-        wait until (falling_edge(clk));                 -- BRR -5                                        -- PC <- PC + 2*(-5) 
---        IR <= X"8E00"; wait until (falling_edge(clk));  -- stall until PC updated
---        wait until (falling_edge(clk));                 -- stall until PC updated
---        wait until (falling_edge(clk));                 -- RETURN		                                 -- PC <- r7 a.k.a exit the subroutine
+	    IR <= X"0F80"; wait until (falling_edge(clk));  -- TEST R6                                       -- set z flag for branch 
+        IR <= X"8402"; wait until (falling_edge(clk));  -- BRR.z 2                                       -- branch if r6 = 0 
+        IR <= X"81FB"; wait until (falling_edge(clk));  -- BRR -5                                        -- PC <- PC + 2*(-5) 
+        IR <= X"8E00"; wait until (falling_edge(clk));  -- RETURN		                                 -- PC <- r7 a.k.a exit the subroutine
         IR <= X"4040"; wait until (falling_edge(clk));  -- OUT r1                                        -- R1 = 08
         IR <= X"4080"; wait until (falling_edge(clk));  -- OUT r2                                        -- R2 = 04
         IR <= X"4180"; wait until (falling_edge(clk));  -- OUT r6                                        -- R6 = 04

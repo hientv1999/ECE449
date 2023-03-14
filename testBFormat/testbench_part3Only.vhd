@@ -35,12 +35,10 @@ architecture behavioural of test_controller_sub is
         IR <= X"4240"; wait until (rising_edge(clk));  -- IN R1             -- R1 = 03 
         IR <= X"4280"; wait until (rising_edge(clk));  -- IN R2			    -- R2 = 01 
         IR <= X"42C0"; wait until (rising_edge(clk));  -- IN R3			    -- R3 = 05 
-        IR <= X"0783"; wait until (rising_edge(clk));  -- stall until updated new value of register
-        wait until (rising_edge(clk));                 -- stall until updated new value of register 
-        wait until (rising_edge(clk));                 -- stall until updated new value of register 
-        wait until (rising_edge(clk));                 -- MUL R6, R0, R3 	-- R6 = R0 * R3 = -2 * 5 = - 10
+        IR <= X"0783"; wait until (rising_edge(clk));  -- MUL R6, R0, R3 	-- R6 = R0 * R3 = -2 * 5 = - 10
+        wait until (rising_edge(clk));                 -- wait 1 cycle for IN to read from memory
         IR <= X"4180"; wait until (rising_edge(clk));  -- OUT r6
-	    
+        IR <= X"8000"; wait until (falling_edge(clk));  -- BRR 0 			-- PC <- PC' + 2*(0) a.k.a infinite loop
         wait; 
     end process; 
 end behavioural; 
