@@ -78,8 +78,9 @@ architecture behavioural of CONTROLLER_file is
 	);
     end component;
     
-	component MEMORY_file port (
-		addr_dt: in std_logic_vector(15 downto 0); 
+	component RAM_file port (
+		--input signals       
+        addr_dt: in std_logic_vector(15 downto 0); 
         addr_ins: in std_logic_vector(15 downto 0);  
 
         din_dt: in std_logic_vector(15 downto 0); 
@@ -90,7 +91,7 @@ architecture behavioural of CONTROLLER_file is
         clk: in std_logic;  
         regcea: in std_logic;  
         regceb: in std_logic;  
-        wea: in std_logic;
+        wea: in std_logic_vector(0 downto 0);
 
         --output signal
         dout_dt: out std_logic_vector(15 downto 0);  
@@ -108,19 +109,20 @@ architecture behavioural of CONTROLLER_file is
     signal short_addr: std_logic_vector(8 downto 0);
 	-- EXECUTE
 	signal ra_idx_execute, rb_idx_execute, rc_idx_execute: std_logic_vector(3 downto 0);
-	signal in1, in2, out1, IR_execute, ext_addr, CPC_execute, NPC_execute: std_logic_vector(15 downto 0);
+	signal in1, in2, IR_execute, ext_addr, CPC_execute, NPC_execute: std_logic_vector(15 downto 0);
 	signal z_flag, n_flag, o_flag: std_logic;
 	signal alu_mode: std_logic_vector(2 downto 0);
 	signal shift_count: std_logic_vector(3 downto 0);
 	-- MEMORY ACCESS
 	signal ra_idx_memoryaccess, rb_idx_memoryaccess, rc_idx_memoryaccess: std_logic_vector(3 downto 0);
-	signal IR_memoryaccess: std_logic_vector(15 downto 0);
+	signal IR_memoryaccess, out1, out2: std_logic_vector(15 downto 0);
 	signal brch_en_memoryaccess: std_logic;
 	signal addr_dt, din_dt: std_logic_vector(15 downto 0);
 	-- WRITE BACK
 	signal ra_idx_writeback, rb_idx_writeback, rc_idx_writeback: std_logic_vector(3 downto 0);
 	signal IR_writeback, alu_dt, mem_dt: std_logic_vector(15 downto 0);
-	signal en_dt, en_ins, rst_clk, regcea, regceb, wea: std_logic;
+	signal en_dt, en_ins, rst_clk, regcea, regceb: std_logic;
+	signal wea: std_logic_vector(0 downto 0);
 
 	begin
 	PC_module : PC_file port map(brch_addr, brch_en, rst, clk, stall, CPC, NPC);	
@@ -128,7 +130,7 @@ architecture behavioural of CONTROLLER_file is
 	REGISTER_module: REGISTER_file port map(rst, clk, rb_idx, rc_idx, rb_val, rc_val, ra_idx, ra_val, wr_en);
     ALU_module: ALU_file port map(in1, in2, alu_mode, shift_count, rst, clk, out1, z_flag, n_flag, o_flag);
     SIGNEXT_module: SIGNEXT_file port map(short_addr, rst, clk, ext_addr);
-    MEMORY_module: MEMORY_file port map(addr_dt, CPC, din_dt, en_dt, en_ins, rst, clk, regcea, regceb, wea, mem_dt, IR);
+    RAM_module: RAM_file port map(addr_dt, CPC, din_dt, en_dt, en_ins, rst, clk, regcea, regceb, wea, mem_dt, IR);
 
 	process (clk) begin
         if(clk = '1' and clk'event) then 
@@ -242,9 +244,13 @@ architecture behavioural of CONTROLLER_file is
 						rb_idx_execute <= '0' & IR(5 downto 3);
 						ra_idx_execute <= '0' & IR(8 downto 6);
 					when "0010001" => -- STORE
-						rb_idx <= IR(5 downto 3);
-						rb_idx_execute <= '0' & IR(5 downto 3);
+						rb_idx <= IR(8 downto 6);	-- dest
+						rb_idx_execute <= '0' & IR(8 downto 6);
+						rc_idx <= IR(5 downto 3);	-- src
+						rc_idx_execute <= '0' & IR(5 downto 3);
 					when "0010010" => --LOADIMM
+					    rb_idx <= "111";
+                        rb_idx_execute <= "0111";
 						ra_idx_execute <= "0111";
 					when "0010011" => --MOV
 						rb_idx <= IR(5 downto 3);
@@ -267,7 +273,7 @@ architecture behavioural of CONTROLLER_file is
 						if (rb_idx_execute = ra_idx_memoryaccess) then
 							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
-
+								
 								IR_memoryaccess <= X"0000";
 								ra_idx_memoryaccess <= "1000";
 								rb_idx_memoryaccess <= "1000";
@@ -283,7 +289,7 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
@@ -291,9 +297,36 @@ architecture behavioural of CONTROLLER_file is
 						end if;
 
 						if (rc_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
 
+								IR_memoryaccess <= X"0000";
+								ra_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+
+								IR_execute <= IR_execute;
+								ra_idx_execute <= ra_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+
+							else
+								in1 <= out1;
+							end if;
+						elsif (rc_idx_execute = ra_idx_writeback) then
+							in1 <= alu_dt;
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
+								in1 <= mem_dt;
+							end if;
+						else
+							in1 <= rc_val;	
+						end if;		
+					when "0000010" => -- SUB
+						alu_mode <= "010";	
+						if (rb_idx_execute = ra_idx_memoryaccess) then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+								stall <= '1';
+								
 								IR_memoryaccess <= X"0000";
 								ra_idx_memoryaccess <= "1000";
 								rb_idx_memoryaccess <= "1000";
@@ -305,18 +338,97 @@ architecture behavioural of CONTROLLER_file is
 								rc_idx_execute <= rc_idx_execute;
 
 							else
-								in2 <= out1;
+								in1 <= out1;
 							end if;
-						elsif (rc_idx_execute = ra_idx_writeback) then
-							in2 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
-								in2 <= mem_dt;
+						elsif (rb_idx_execute = ra_idx_writeback) then
+							in1 <= alu_dt;
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
+								in1 <= mem_dt;
 							end if;
 						else
-							in2 <= rc_val;	
+							in1 <= rb_val;	
 						end if;
-					when "0000010" => -- SUB
-						alu_mode <= "010";	
+
+						if (rc_idx_execute = ra_idx_memoryaccess) then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+								stall <= '1';
+
+								IR_memoryaccess <= X"0000";
+								ra_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+
+								IR_execute <= IR_execute;
+								ra_idx_execute <= ra_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+
+							else
+								in1 <= out1;
+							end if;
+						elsif (rc_idx_execute = ra_idx_writeback) then
+							in1 <= alu_dt;
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
+								in1 <= mem_dt;
+							end if;
+						else
+							in1 <= rc_val;	
+						end if;			
+					when "0000011" => -- MUL
+						alu_mode <= "011";	
+						if (rb_idx_execute = ra_idx_memoryaccess) then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+								stall <= '1';
+								
+								IR_memoryaccess <= X"0000";
+								ra_idx_memoryaccess <= "1000";
+								rb_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+
+								IR_execute <= IR_execute;
+								ra_idx_execute <= ra_idx_execute;
+								rb_idx_execute <= rb_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+
+							else
+								in1 <= out1;
+							end if;
+						elsif (rb_idx_execute = ra_idx_writeback) then
+							in1 <= alu_dt;
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
+								in1 <= mem_dt;
+							end if;
+						else
+							in1 <= rb_val;	
+						end if;
+
+						if (rc_idx_execute = ra_idx_memoryaccess) then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+								stall <= '1';
+
+								IR_memoryaccess <= X"0000";
+								ra_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+
+								IR_execute <= IR_execute;
+								ra_idx_execute <= ra_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+
+							else
+								in1 <= out1;
+							end if;
+						elsif (rc_idx_execute = ra_idx_writeback) then
+							in1 <= alu_dt;
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
+								in1 <= mem_dt;
+							end if;
+						else
+							in1 <= rc_val;	
+						end if;			
+					when "0000100" => -- NAND
+						alu_mode <= "100";	
 						if (rb_idx_execute = ra_idx_memoryaccess) then
 							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
@@ -336,123 +448,17 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
 							in1 <= rb_val;	
-						end if;
-
-						if (rc_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
-								stall <= '1';
-
-								IR_memoryaccess <= X"0000";
-								ra_idx_memoryaccess <= "1000";
-								rb_idx_memoryaccess <= "1000";
-								rc_idx_memoryaccess <= "1000";
-
-								IR_execute <= IR_execute;
-								ra_idx_execute <= ra_idx_execute;
-								rb_idx_execute <= rb_idx_execute;
-								rc_idx_execute <= rc_idx_execute;
-
-							else
-								in2 <= out1;
-							end if;
-						elsif (rc_idx_execute = ra_idx_writeback) then
-							in2 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
-								in2 <= mem_dt;
-							end if;
-						else
-							in2 <= rc_val;	
-						end if;			
-					when "0000011" => -- MUL
-						alu_mode <= "011";	
-						if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
-								stall <= '1';
-
-								IR_memoryaccess <= X"0000";
-								ra_idx_memoryaccess <= "1000";
-								rb_idx_memoryaccess <= "1000";
-								rc_idx_memoryaccess <= "1000";
-
-								IR_execute <= IR_execute;
-								ra_idx_execute <= ra_idx_execute;
-								rb_idx_execute <= rb_idx_execute;
-								rc_idx_execute <= rc_idx_execute;
-
-							else
-								in1 <= out1;
-							end if;
-						elsif (rb_idx_execute = ra_idx_writeback) then
-							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
-								in1 <= mem_dt;
-							end if;
-						else
-							in1 <= rb_val;	
-						end if;
-
-						if (rc_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
-								stall <= '1';
-
-								IR_memoryaccess <= X"0000";
-								ra_idx_memoryaccess <= "1000";
-								rb_idx_memoryaccess <= "1000";
-								rc_idx_memoryaccess <= "1000";
-
-								IR_execute <= IR_execute;
-								ra_idx_execute <= ra_idx_execute;
-								rb_idx_execute <= rb_idx_execute;
-								rc_idx_execute <= rc_idx_execute;
-
-							else
-								in2 <= out1;
-							end if;
-						elsif (rc_idx_execute = ra_idx_writeback) then
-							in2 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
-								in2 <= mem_dt;
-							end if;
-						else
-							in2 <= rc_val;	
-						end if;				
-					when "0000100" => -- NAND
-						alu_mode <= "100";	
-						if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
-								stall <= '1';
-
-								IR_memoryaccess <= X"0000";
-								ra_idx_memoryaccess <= "1000";
-								rb_idx_memoryaccess <= "1000";
-								rc_idx_memoryaccess <= "1000";
-
-								IR_execute <= IR_execute;
-								ra_idx_execute <= ra_idx_execute;
-								rb_idx_execute <= rb_idx_execute;
-								rc_idx_execute <= rc_idx_execute;
-
-							else
-								in1 <= out1;
-							end if;
-						elsif (rb_idx_execute = ra_idx_writeback) then
-							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
-								in1 <= mem_dt;
-							end if;
-						else
-							in1 <= rb_val;	
-						end if;			
+						end if;		
 					when "0000101" => -- SHL
 						shift_count <= IR_execute(3 downto 0);
 						alu_mode <= "101";	
 						if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
 
 								IR_memoryaccess <= X"0000";
@@ -470,17 +476,17 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
 							in1 <= rb_val;	
-						end if;				
+						end if;			
 					when "0000110" => -- SHR
 						shift_count <= IR_execute(3 downto 0);
 						alu_mode <= "110";	
 						if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
 
 								IR_memoryaccess <= X"0000";
@@ -498,7 +504,7 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
@@ -507,7 +513,7 @@ architecture behavioural of CONTROLLER_file is
 					when "0000111" => -- TEST
 						alu_mode <= "111";	
 						if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
 
 								IR_memoryaccess <= X"0000";
@@ -525,7 +531,7 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
@@ -534,7 +540,7 @@ architecture behavioural of CONTROLLER_file is
 					when "0100000" => -- OUT
 						alu_mode <= "111";	
 						if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
 
 								IR_memoryaccess <= X"0000";
@@ -552,7 +558,7 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
@@ -612,7 +618,7 @@ architecture behavioural of CONTROLLER_file is
 						brch_en_memoryaccess <= '1';
 					    alu_mode <= "001";
 						if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
 
 								IR_memoryaccess <= X"0000";
@@ -630,7 +636,7 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
@@ -641,7 +647,7 @@ architecture behavioural of CONTROLLER_file is
 						brch_en_memoryaccess <= '1';
 					    alu_mode <= "111";
 					    if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
 
 								IR_memoryaccess <= X"0000";
@@ -659,7 +665,7 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
@@ -668,7 +674,7 @@ architecture behavioural of CONTROLLER_file is
 					when "0010000" => -- LOAD
 						alu_mode <= "111";
 						if (rb_idx_execute = ra_idx_memoryaccess) then
-							if (IR_memoryaccess(15 downto 9) = "0100001") then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
 								stall <= '1';
 
 								IR_memoryaccess <= X"0000";
@@ -686,12 +692,12 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
 							in1 <= rb_val;	
-						end if;				
+						end if;		
 					when "0010001" => -- STORE
 						alu_mode <= "111";
 						if (rb_idx_execute = ra_idx_memoryaccess) then
@@ -713,14 +719,65 @@ architecture behavioural of CONTROLLER_file is
 							end if;
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
-							if (IR_writeback(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
 								in1 <= mem_dt;
 							end if;
 						else
 							in1 <= rb_val;	
-						end if;		
+						end if;	
+						
+						if (rc_idx_execute = ra_idx_memoryaccess) then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+								stall <= '1';
+
+								IR_memoryaccess <= X"0000";
+								ra_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+
+								IR_execute <= IR_execute;
+								ra_idx_execute <= ra_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+
+							else
+								in1 <= out1;
+							end if;
+						elsif (rc_idx_execute = ra_idx_writeback) then
+							in1 <= alu_dt;
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
+								in1 <= mem_dt;
+							end if;
+						else
+							out2 <= rc_val;	
+						end if;	
 					when "0010010" => --LOADIMM
-						NULL;
+						alu_mode <= "111";	
+                        if (rb_idx_execute = ra_idx_memoryaccess) then
+							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
+								stall <= '1';
+
+								IR_memoryaccess <= X"0000";
+								ra_idx_memoryaccess <= "1000";
+								rb_idx_memoryaccess <= "1000";
+								rc_idx_memoryaccess <= "1000";
+
+								IR_execute <= IR_execute;
+								ra_idx_execute <= ra_idx_execute;
+								rb_idx_execute <= rb_idx_execute;
+								rc_idx_execute <= rc_idx_execute;
+
+							else
+								in1 <= out1;
+							end if;
+						elsif (rb_idx_execute = ra_idx_writeback) then
+							in1 <= alu_dt;
+							if (IR_writeback(15 downto 9) = "0100001" or IR_writeback(15 downto 9) = "0010000") then
+								in1 <= mem_dt;
+							end if;
+						else
+							in1 <= rb_val;	
+						end if;
 					when "0010011" => --MOV
 						alu_mode <= "111";
 						if (rb_idx_execute = ra_idx_memoryaccess) then
@@ -761,7 +818,7 @@ architecture behavioural of CONTROLLER_file is
 				brch_en <= brch_en_memoryaccess;
 				brch_addr <= out1;
 				en_dt <= '0';
-				wea <= '0';
+				wea <= "0";
 				if (brch_en_memoryaccess = '1') then
 					-- clear instruction in previous stages as we have branched
 					IR_memoryaccess <= X"0000";
@@ -797,7 +854,7 @@ architecture behavioural of CONTROLLER_file is
 						addr_dt <= X"FFF2";
 						din_dt <= out1;
 						en_dt <= '1';
-						wea <= '1';
+						wea <= "1";
 					when "0100001" => -- IN
 						addr_dt <= X"FFF0";
 						en_dt <= '1';
@@ -821,12 +878,12 @@ architecture behavioural of CONTROLLER_file is
 						addr_dt <= out1;
 						en_dt <= '1';
 					when "0010001" => -- STORE
-						addr_dt <= IR_memoryaccess(8 downto 6);
-						din_dt <= out1;
+						addr_dt <= out1;	-- dest
+						din_dt <= out2;		-- src
 						en_dt <= '1';
-						wea <= '1';
+						wea <= "1";
 					when "0010010" => --LOADIMM
-						NULL;
+						alu_dt <= out1;
 					when "0010011" => --MOV
 						alu_dt <= out1;
 					when others => NULL;
@@ -895,9 +952,9 @@ architecture behavioural of CONTROLLER_file is
 					when "0010010" => --LOADIMM
 						ra_idx <= "111";
 						if (IR_writeback(8) = '1') then
-							ra_val <= IR_writeback(7 downto 0) & X"00";
+							ra_val <= IR_writeback(7 downto 0) & alu_dt(7 downto 0);
 						else
-							ra_val <= X"00" & IR_writeback(7 downto 0);
+							ra_val <= alu_dt(15 downto 8) & IR_writeback(7 downto 0);
 						end if;
 						wr_en <= '1';
 					when "0010011" => --MOV
