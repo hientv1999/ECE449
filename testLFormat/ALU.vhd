@@ -30,7 +30,7 @@ signal o        : std_logic;
 
 begin
     process(clk, alu_mode, in1, in2, shift_count, rst) begin
-       if(clk='0' and clk'event) then 
+       if(clk='1' and clk'event) then 
             if(rst='1') then
                 output <= X"00000000";
                 z <= '0';

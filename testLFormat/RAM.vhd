@@ -13,13 +13,9 @@ entity RAM_file is
 
         din_dt: in std_logic_vector(15 downto 0); 
         
-        en_dt: in std_logic;
-        en_ins: in std_logic;
+        wr_mem_en: in std_logic;
         rst: in std_logic;  
         clk: in std_logic;  
-        regcea: in std_logic;  
-        regceb: in std_logic;  
-        wea: in std_logic_vector(0 downto 0);
 
         --output signal
         dout_dt: out std_logic_vector(15 downto 0);  
@@ -63,9 +59,9 @@ begin
         -- Port A module ports - DATA
         clka                    => clk,
         rsta                    => rst,
-        ena                     => en_dt,
+        ena                     => '1'',
         regcea                  => '1',   --do not change
-        wea                     => wea,
+        wea                     => 'wr_mem_en,
         addra                   => addr_dt,
         dina                    => din_dt,
         douta                   => dout_dt,
@@ -73,7 +69,7 @@ begin
         -- Port B module ports - INSTRUCTION
         clkb                    => clk,
         rstb                    => rst,
-        enb                     => en_ins,
+        enb                     => '1',
         regceb                  => '1',   --do not change
         addrb                   => addr_ins,
         doutb                   => dout_ins

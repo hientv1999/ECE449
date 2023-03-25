@@ -20,7 +20,7 @@ signal addr   : std_logic_vector(15 downto 0);
 
 begin
     process(clk) begin
-       if(clk='0' and clk'event) then 
+       if(clk='1' and clk'event) then 
             if(rst='1') then
                 addr <= X"0000";
             else
