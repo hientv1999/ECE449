@@ -2,6 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+Library xpm;
+use xpm.vcomponents.all;
+
+
 entity ROM_file is
     port(
         --input signals       
@@ -9,10 +13,9 @@ entity ROM_file is
         en: in std_logic;
         rst: in std_logic;  
         clk: in std_logic;  
-        regcea: in std_logic;  
 
         -- output signal
-        dout: out std_logic_vector(15 downto 0);  
+        dout: out std_logic_vector(15 downto 0)
     );
 end ROM_file;
 
@@ -26,7 +29,7 @@ architecture behavioural of ROM_file is
         -- Common module generics
         MEMORY_SIZE             => 8192,            -- 1024 bytes block
         MEMORY_PRIMITIVE        => "auto",          --string; "auto", "distributed", or "block";
-        MEMORY_INIT_FILE        => "none",          --string; "none" or "<filename>.mem" 
+        MEMORY_INIT_FILE        => "test.coe",          --string; "none" or "<filename>.mem" 
         MEMORY_INIT_PARAM       => "",              --string;
         USE_MEM_INIT            => 1,               --integer; 0,1
         WAKEUP_TIME             => "disable_sleep", --string; "disable_sleep" or "use_sleep_pin" 
@@ -49,8 +52,8 @@ architecture behavioural of ROM_file is
         -- Port A module ports
         clka                    => clk,
         rsta                    => rst,
-        ena                     => ena,
-        regcea                  => regcea,
+        ena                     => en,
+        regcea                  => '1',
         addra                   => addr,
         injectsbiterra          => '0',   --do not change
         injectdbiterra          => '0',   --do not change

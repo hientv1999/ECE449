@@ -17,6 +17,7 @@ entity CONTROLLER_file is
 		--input signals
 		rst: in std_logic;  
 		clk: in std_logic;
+		btn0, btn1: in std_logic;
 		--output signal
 		z, n, o: out std_logic;
 		PC: out std_logic_vector(15 downto 0);
@@ -50,8 +51,9 @@ architecture behavioural of CONTROLLER_file is
         clk: in std_logic;  
         stall: in std_logic;
         --output signal
-        CPC: out std_logic_vector(15 downto 0);
-        NPC: out std_logic_vector(15 downto 0)
+        en_ROM: out std_logic;
+        en_RAM: out std_logic;
+        CPC: out std_logic_vector(15 downto 0)
 	);
 	end component;
 
@@ -83,9 +85,10 @@ architecture behavioural of CONTROLLER_file is
         addr_dt: in std_logic_vector(15 downto 0); 
         addr_ins: in std_logic_vector(15 downto 0);  
 
-        din_dt: in std_logic_vector(15 downto 0); 
+        din_dt: in std_logic_vector(15 downto 0);
+        en: in std_logic;
         
-        wr_mem_en: in std_logic;
+        wr_mem_en: in std_logic_vector(0 downto 0);
         rst: in std_logic;  
         clk: in std_logic;  
 
@@ -94,10 +97,33 @@ architecture behavioural of CONTROLLER_file is
         dout_ins: out std_logic_vector(15 downto 0)
 	);
 	end component;
+	
+	component ROM_file port(
+        --input signals       
+        addr: in std_logic_vector(15 downto 0); 
+        en: in std_logic;
+        rst: in std_logic;  
+        clk: in std_logic; 
 
+        -- output signal
+        dout: out std_logic_vector(15 downto 0)
+    );
+    end component;
+    
+    component display_controller port(
+        clk, reset: in std_logic;
+        hex3, hex2, hex1, hex0: in std_logic_vector(3 downto 0);
+        an: out std_logic_vector(3 downto 0);
+        sseg: out std_logic_vector(6 downto 0)
+    );
+    end component;
+
+    signal digit3, digit2, digit1, digit0: std_logic_vector(3 downto 0);
+    signal an: std_logic_vector(3 downto 0);
+    signal sseg: std_logic_vector(6 downto 0);
 	-- FETCH
-	signal brch_addr, CPC, NPC, IR: std_logic_vector(15 downto 0);
-	signal brch_en, stall: std_logic;
+	signal brch_addr, CPC, IR: std_logic_vector(15 downto 0);
+	signal brch_en, stall, en_ROM, en_RAM: std_logic;
 	-- DECODE
 	signal ra_idx, rb_idx, rc_idx: std_logic_vector(2 downto 0);
 	signal ra_val, rb_val, rc_val: std_logic_vector(15 downto 0);
@@ -105,7 +131,7 @@ architecture behavioural of CONTROLLER_file is
     signal short_addr: std_logic_vector(8 downto 0);
 	-- EXECUTE
 	signal ra_idx_execute, rb_idx_execute, rc_idx_execute: std_logic_vector(3 downto 0);
-	signal in1, in2, IR_execute, ext_addr, CPC_execute, NPC_execute: std_logic_vector(15 downto 0);
+	signal in1, in2, IR_execute, ext_addr, CPC_execute: std_logic_vector(15 downto 0);
 	signal z_flag, n_flag, o_flag: std_logic;
 	signal alu_mode: std_logic_vector(2 downto 0);
 	signal shift_count: std_logic_vector(3 downto 0);
@@ -117,18 +143,42 @@ architecture behavioural of CONTROLLER_file is
 	-- WRITE BACK
 	signal ra_idx_writeback, rb_idx_writeback, rc_idx_writeback: std_logic_vector(3 downto 0);
 	signal IR_writeback, alu_dt, mem_dt: std_logic_vector(15 downto 0);
-	signal wr_mem_en, rst_clk, regcea, regceb: std_logic;
+	signal rst_clk, regcea, regceb: std_logic;
+	signal wr_mem_en: std_logic_vector(0 downto 0);
 
 	begin
-	PC_module : PC_file port map(brch_addr, brch_en, rst, clk, stall, CPC, NPC);	
+	PC_module : PC_file port map(brch_addr, brch_en, rst, clk, stall, en_ROM, en_RAM, CPC);	
 	-- ra for WRITE only, rb, rc for READ only
 	REGISTER_module: REGISTER_file port map(rst, clk, rb_idx, rc_idx, rb_val, rc_val, ra_idx, ra_val, wr_en);
     ALU_module: ALU_file port map(in1, in2, alu_mode, shift_count, rst, clk, out1, z_flag, n_flag, o_flag);
     SIGNEXT_module: SIGNEXT_file port map(short_addr, rst, clk, ext_addr);
-    RAM_module: RAM_file port map(addr_dt, CPC, din_dt, wr_mem_en, rst, clk, mem_dt, IR);
+    RAM_module: RAM_file port map(addr_dt, CPC, din_dt, en_RAM, wr_mem_en, rst, clk, mem_dt, IR);
+    ROM_module: ROM_file port map(addr_dt, en_ROM, rst, clk, IR);
+    DISPLAY_module: display_controller port map(clk, rst, digit3, digit2, digit1, digit0, an, sseg); 
 
 	process (clk) begin
-        if(clk = '0' and clk'event) then 
+        if(clk = '0' and clk'event) then
+            if (btn0 = '0' and btn1 = '0') then
+                digit3 <= CPC(15 downto 12);
+                digit2 <= CPC(11 downto 8);
+                digit1 <= CPC(7 downto 4);
+                digit0 <= CPC(3 downto 0);
+            elsif (btn0 = '1' and btn1 ='0') then
+                digit3 <= IR(15 downto 12);
+                digit2 <= IR(11 downto 8);
+                digit1 <= IR(7 downto 4);
+                digit0 <= IR(3 downto 0);
+            elsif (btn0 = '0' and btn1 ='1') then
+                digit3 <= out1(15 downto 12);
+                digit2 <= out1(11 downto 8);
+                digit1 <= out1(7 downto 4);
+                digit0 <= out1(3 downto 0);
+            else
+                digit3 <= brch_addr(15 downto 12);
+                digit2 <= brch_addr(11 downto 8);
+                digit1 <= brch_addr(7 downto 4);
+                digit0 <= brch_addr(3 downto 0);
+            end if;
 			brch_addr <= X"0000";
 			brch_en <= '0';
 			z <= z_flag;
@@ -161,7 +211,6 @@ architecture behavioural of CONTROLLER_file is
 				-- code for DECODE stage
 				IR_execute <= IR;
 				CPC_execute <= CPC;
-				NPC_execute <= NPC;
 				stall <= '0';
 				ra_idx_execute <= "1000";
 				rb_idx_execute <= "1000";
@@ -874,7 +923,7 @@ architecture behavioural of CONTROLLER_file is
 				rb_idx_writeback <= rb_idx_memoryaccess;
 				rc_idx_writeback <= rc_idx_memoryaccess;
 				alu_dt <= out1;
-				wr_mem_en <= '0';
+				wr_mem_en <= "0";
 				if (brch_en_memoryaccess = '1') then
 					-- clear instruction in previous stages as we have branched
 					IR_memoryaccess <= X"0000";
@@ -909,7 +958,7 @@ architecture behavioural of CONTROLLER_file is
 						out_val <= out1;
 						addr_dt <= X"FFF2";
 						din_dt <= out1;
-						wr_mem_en <= '1';
+						wr_mem_en <= "1";
 					when "0100001" => -- IN
 						addr_dt <= X"FFF0";
 					when "1000000" => -- BRR
@@ -933,7 +982,7 @@ architecture behavioural of CONTROLLER_file is
 					when "0010001" => -- STORE
 						addr_dt <= out1;	-- dest
 						din_dt <= out2;		-- src
-						wr_mem_en <= '1';
+						wr_mem_en <= "1";
 					when "0010010" => --LOADIMM
 						alu_dt <= out1;
 					when "0010011" => --MOV
