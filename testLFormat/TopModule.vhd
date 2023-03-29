@@ -18,10 +18,9 @@ entity CONTROLLER_file is
 		rst: in std_logic;  
 		clk: in std_logic;
 		btn0, btn1: in std_logic;
-		--output signal
-		z, n, o: out std_logic;
-		PC: out std_logic_vector(15 downto 0);
-		out_val: out std_logic_vector(15 downto 0)
+		-- output signals
+        an: out std_logic_vector(3 downto 0);
+        sseg: out std_logic_vector(6 downto 0)
 	);
 end CONTROLLER_file;
 
@@ -51,8 +50,6 @@ architecture behavioural of CONTROLLER_file is
         clk: in std_logic;  
         stall: in std_logic;
         --output signal
-        en_ROM: out std_logic;
-        en_RAM: out std_logic;
         CPC: out std_logic_vector(15 downto 0)
 	);
 	end component;
@@ -86,7 +83,6 @@ architecture behavioural of CONTROLLER_file is
         addr_ins: in std_logic_vector(15 downto 0);  
 
         din_dt: in std_logic_vector(15 downto 0);
-        en: in std_logic;
         
         wr_mem_en: in std_logic_vector(0 downto 0);
         rst: in std_logic;  
@@ -101,12 +97,20 @@ architecture behavioural of CONTROLLER_file is
 	component ROM_file port(
         --input signals       
         addr: in std_logic_vector(15 downto 0); 
-        en: in std_logic;
+
         rst: in std_logic;  
         clk: in std_logic; 
 
         -- output signal
         dout: out std_logic_vector(15 downto 0)
+    );
+    end component;
+    
+    component MUX_file port(
+        in1: in std_logic_vector(15 downto 0);
+        in2: in std_logic_vector(15 downto 0);
+        sel: in std_logic;
+        out1: out std_logic_vector(15 downto 0)
     );
     end component;
     
@@ -118,12 +122,13 @@ architecture behavioural of CONTROLLER_file is
     );
     end component;
 
-    signal digit3, digit2, digit1, digit0: std_logic_vector(3 downto 0);
-    signal an: std_logic_vector(3 downto 0);
-    signal sseg: std_logic_vector(6 downto 0);
+    
+	signal digit3, digit2, digit1, digit0: std_logic_vector(3 downto 0);
+    signal z, n, o: std_logic;
+    signal out_val: std_logic_vector(15 downto 0);
 	-- FETCH
-	signal brch_addr, CPC, IR: std_logic_vector(15 downto 0);
-	signal brch_en, stall, en_ROM, en_RAM: std_logic;
+	signal brch_addr, CPC, IR_ROM, IR_RAM, IR: std_logic_vector(15 downto 0);
+	signal brch_en, stall: std_logic;
 	-- DECODE
 	signal ra_idx, rb_idx, rc_idx: std_logic_vector(2 downto 0);
 	signal ra_val, rb_val, rc_val: std_logic_vector(15 downto 0);
@@ -147,13 +152,14 @@ architecture behavioural of CONTROLLER_file is
 	signal wr_mem_en: std_logic_vector(0 downto 0);
 
 	begin
-	PC_module : PC_file port map(brch_addr, brch_en, rst, clk, stall, en_ROM, en_RAM, CPC);	
+	PC_module : PC_file port map(brch_addr, brch_en, rst, clk, stall, CPC);	
 	-- ra for WRITE only, rb, rc for READ only
 	REGISTER_module: REGISTER_file port map(rst, clk, rb_idx, rc_idx, rb_val, rc_val, ra_idx, ra_val, wr_en);
     ALU_module: ALU_file port map(in1, in2, alu_mode, shift_count, rst, clk, out1, z_flag, n_flag, o_flag);
     SIGNEXT_module: SIGNEXT_file port map(short_addr, rst, clk, ext_addr);
-    RAM_module: RAM_file port map(addr_dt, CPC, din_dt, en_RAM, wr_mem_en, rst, clk, mem_dt, IR);
-    ROM_module: ROM_file port map(addr_dt, en_ROM, rst, clk, IR);
+    RAM_module: RAM_file port map(addr_dt, CPC, din_dt, wr_mem_en, rst, clk, mem_dt, IR_RAM);
+    ROM_module: ROM_file port map(addr_dt, rst, clk, IR_ROM);
+    MUX_ROMRAM: MUX_file port map(IR_ROM, IR_RAM, CPC(10), IR);
     DISPLAY_module: display_controller port map(clk, rst, digit3, digit2, digit1, digit0, an, sseg); 
 
 	process (clk) begin
@@ -184,7 +190,7 @@ architecture behavioural of CONTROLLER_file is
 			z <= z_flag;
 			n <= n_flag;
 			o <= o_flag;
-			-- regcea,regceb,web are unknown signals
+			
 			if (rst='1') then
 				IR_writeback <= X"0000";
 				IR_memoryaccess <= X"0000";
@@ -1066,7 +1072,5 @@ architecture behavioural of CONTROLLER_file is
 				end case;
 			end if;
 		end if;
-		-- will be changed later
-		PC <= CPC;
     end process;
  end behavioural;

@@ -12,7 +12,6 @@ entity RAM_file is
         addr_ins: in std_logic_vector(15 downto 0);  
 
         din_dt: in std_logic_vector(15 downto 0);
-        en: in std_logic;
         
         wr_mem_en: in std_logic_vector(0 downto 0);
         rst: in std_logic;  
@@ -60,7 +59,7 @@ begin
         -- Port A module ports - DATA
         clka                    => clk,
         rsta                    => rst,
-        ena                     => en,
+        ena                     => '1',
         regcea                  => '1',   --do not change
         wea                     => wr_mem_en,
         addra                   => addr_dt,
@@ -70,7 +69,7 @@ begin
         -- Port B module ports - INSTRUCTION
         clkb                    => clk,
         rstb                    => rst,
-        enb                     => en,
+        enb                     => '1',
         regceb                  => '1',   --do not change
         addrb                   => addr_ins,
         doutb                   => dout_ins

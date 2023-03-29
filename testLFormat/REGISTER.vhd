@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
-entity register_file is
+entity REGISTER_file is
     port(
         rst : in std_logic; 
         clk: in std_logic;
@@ -13,7 +13,7 @@ entity register_file is
         wr_data: in std_logic_vector(15 downto 0);
         wr_enable: in std_logic
     );
-end register_file;
+end REGISTER_file;
 
 architecture behavioural of register_file is
     type reg_array is array (integer range 0 to 7) of std_logic_vector(15 downto 0);

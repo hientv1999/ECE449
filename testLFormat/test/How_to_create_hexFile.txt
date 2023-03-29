@@ -1,0 +1,2 @@
+assembler19 -o test test.asm
+Assembler will create 3 files: .coe, .hex, .lst
