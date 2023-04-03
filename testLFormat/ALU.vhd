@@ -179,7 +179,14 @@ begin
                             o <= '0';
                         end if;
                     when "101" => --SHL (2's complement)
-                        if (in1(15) /= in1(15-to_integer(unsigned(shift_count)))) then
+                        if (output(31) /= output(30) or output(31) /=  output(29) or
+                        output(31) /= output(28) or output(31) /=  output(27) or
+                        output(31) /= output(26) or output(31) /=  output(25) or
+                        output(31) /= output(24) or output(31) /=  output(23) or
+                        output(31) /= output(22) or output(31) /=  output(21) or
+                        output(31) /= output(20) or output(31) /=  output(19) or
+                        output(31) /= output(18) or output(31) /=  output(17) or
+                        output(31) /= output(16) or output(31) /=  output(15)) then
                             o <= '1';
                         else
                             o <= '0';
