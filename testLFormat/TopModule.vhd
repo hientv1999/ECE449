@@ -173,10 +173,10 @@ architecture behavioural of CONTROLLER_file is
                 digit1 <= CPC(7 downto 4);
                 digit0 <= CPC(3 downto 0);
             elsif (btn0 = '1' and btn1 ='0') then
-                digit3 <= IR(15 downto 12);
-                digit2 <= IR(11 downto 8);
-                digit1 <= IR(7 downto 4);
-                digit0 <= IR(3 downto 0);
+                digit3 <= IR_ROM(15 downto 12);
+                digit2 <= IR_ROM(11 downto 8);
+                digit1 <= IR_ROM(7 downto 4);
+                digit0 <= IR_ROM(3 downto 0);
             elsif (btn0 = '0' and btn1 ='1') then
                 digit3 <= out1(15 downto 12);
                 digit2 <= out1(11 downto 8);
