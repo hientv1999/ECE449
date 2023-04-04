@@ -17,6 +17,7 @@ entity CONTROLLER_file is
 		--input signals
 		rst: in std_logic;  
 		clk: in std_logic;
+		clk_display: in std_logic;
 		btn0, btn1: in std_logic;
 		-- output signals
         an: out std_logic_vector(3 downto 0);
@@ -160,7 +161,7 @@ architecture behavioural of CONTROLLER_file is
     RAM_module: RAM_file port map(addr_dt, CPC, din_dt, wr_mem_en, rst, clk, mem_dt, IR_RAM);
     ROM_module: ROM_file port map(addr_dt, rst, clk, IR_ROM);
     MUX_ROMRAM: MUX_file port map(IR_ROM, IR_RAM, CPC(10), IR);
-    DISPLAY_module: display_controller port map(clk, rst, digit3, digit2, digit1, digit0, an, sseg); 
+    DISPLAY_module: display_controller port map(clk_display, rst, digit3, digit2, digit1, digit0, an, sseg); 
 
 	process (clk) begin
         if(clk = '0' and clk'event) then
@@ -175,10 +176,10 @@ architecture behavioural of CONTROLLER_file is
                 digit1 <= IR(7 downto 4);
                 digit0 <= IR(3 downto 0);
             elsif (btn0 = '0' and btn1 ='1') then
-                digit3 <= out1(15 downto 12);
-                digit2 <= out1(11 downto 8);
-                digit1 <= out1(7 downto 4);
-                digit0 <= out1(3 downto 0);
+                digit3 <= x"1"; -- out1(15 downto 12);
+                digit2 <= x"2"; -- out1(11 downto 8);
+                digit1 <= x"3"; -- out1(7 downto 4);
+                digit0 <= x"E"; -- out1(3 downto 0);
             else
                 digit3 <= brch_addr(15 downto 12);
                 digit2 <= brch_addr(11 downto 8);

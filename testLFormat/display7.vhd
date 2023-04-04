@@ -53,7 +53,7 @@ architecture arch of display_controller is
 	signal q_reg, q_next: unsigned(1 downto 0);
 	signal sel: std_logic_vector(1 downto 0);
 	signal hex: std_logic_vector(3 downto 0);
-
+    signal delay : unsigned ( 16 downto 0 );
 
 begin
 
@@ -64,7 +64,10 @@ begin
 		if reset='1' then                       --If button pressed all  bits in q_reg set to 0
 			q_reg <= (others=>'0');
 		elsif (clk'event and clk='1') then       --If clock is rising q_next assigned to q_reg
-			q_reg <= q_next;
+		    delay <= delay + 1;
+		    if ( delay = b"10000000000000000" ) then
+		      q_reg <= q_reg + 1; -- q_next;
+		    end if;
 		end if;
 	end process;
 	
