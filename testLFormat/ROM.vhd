@@ -20,7 +20,6 @@ entity ROM_file is
 end ROM_file;
 
 architecture behavioural of ROM_file is
-
     begin
 
     xpm_memory_sprom_inst : xpm_memory_sprom

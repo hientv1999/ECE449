@@ -19,9 +19,12 @@ entity CONTROLLER_file is
 		clk: in std_logic;
 		clk_display: in std_logic;
 		btn0, btn1: in std_logic;
+		input_port: in std_logic_vector(9 downto 0);
 		-- output signals
         an: out std_logic_vector(3 downto 0);
-        sseg: out std_logic_vector(6 downto 0)
+        sseg: out std_logic_vector(6 downto 0);
+		output_port: out std_logic
+
 	);
 end CONTROLLER_file;
 
@@ -126,7 +129,6 @@ architecture behavioural of CONTROLLER_file is
     
 	signal digit3, digit2, digit1, digit0: std_logic_vector(3 downto 0);
     signal z, n, o: std_logic;
-    signal out_val: std_logic_vector(15 downto 0);
 	-- FETCH
 	signal brch_addr, CPC, IR_ROM, IR_RAM, IR: std_logic_vector(15 downto 0);
 	signal brch_en, stall: std_logic;
@@ -163,9 +165,9 @@ architecture behavioural of CONTROLLER_file is
     MUX_ROMRAM: MUX_file port map(IR_ROM, IR_RAM, CPC(10), IR);
     DISPLAY_module: display_controller port map(clk_display, rst, digit3, digit2, digit1, digit0, an, sseg); 
 
-	process (clk) begin
-        if(clk = '0' and clk'event) then
-            if (btn0 = '0' and btn1 = '0') then
+	process(clk_display) begin
+		if (clk_display = '0' and clk_display'event) then
+			if (btn0 = '0' and btn1 = '0') then
                 digit3 <= CPC(15 downto 12);
                 digit2 <= CPC(11 downto 8);
                 digit1 <= CPC(7 downto 4);
@@ -176,16 +178,21 @@ architecture behavioural of CONTROLLER_file is
                 digit1 <= IR(7 downto 4);
                 digit0 <= IR(3 downto 0);
             elsif (btn0 = '0' and btn1 ='1') then
-                digit3 <= x"1"; -- out1(15 downto 12);
-                digit2 <= x"2"; -- out1(11 downto 8);
-                digit1 <= x"3"; -- out1(7 downto 4);
-                digit0 <= x"E"; -- out1(3 downto 0);
+                digit3 <= out1(15 downto 12);
+                digit2 <= out1(11 downto 8);
+                digit1 <= out1(7 downto 4);
+                digit0 <= out1(3 downto 0);
             else
                 digit3 <= brch_addr(15 downto 12);
                 digit2 <= brch_addr(11 downto 8);
                 digit1 <= brch_addr(7 downto 4);
                 digit0 <= brch_addr(3 downto 0);
             end if;
+		end if;
+	end process;
+
+	process (clk) begin
+        if(clk = '0' and clk'event) then
 			brch_addr <= X"0000";
 			brch_en <= '0';
 			z <= z_flag;
@@ -202,7 +209,6 @@ architecture behavioural of CONTROLLER_file is
 				o <= '0';
 				alu_mode <= "000";
 				shift_count <= "0000";
-				out_val <= X"0000";
 				ra_idx_execute <= "1000";
 				rb_idx_execute <= "1000";
 				rc_idx_execute <= "1000";
@@ -962,12 +968,9 @@ architecture behavioural of CONTROLLER_file is
 					when "0000111" => -- TEST
 						NULL;				
 					when "0100000" => -- OUT
-						out_val <= out1;
-						addr_dt <= X"FFF2";
-						din_dt <= out1;
-						wr_mem_en <= "1";
+						output_port <= out1(0);
 					when "0100001" => -- IN
-						addr_dt <= X"FFF0";
+						NULL;
 					when "1000000" => -- BRR
 						NULL;
 					when "1000001" => -- BRR.N
@@ -1031,7 +1034,7 @@ architecture behavioural of CONTROLLER_file is
 						NULL;
 					when "0100001" => -- IN
 						ra_idx <= ra_idx_writeback(2 downto 0);	
-						ra_val <= mem_dt;
+						ra_val <= input_port & "000000";
 						wr_en <= '1';	
 					when "1000000" => -- BRR
 					    NULL;
