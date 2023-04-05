@@ -18,11 +18,12 @@ entity CONTROLLER_file is
 		rst: in std_logic;  
 		clk: in std_logic;
 		clk_display: in std_logic;
-		btn0, btn1: in std_logic;
+		btn: in std_logic_vector(3 downto 0);
 		input_port: in std_logic_vector(9 downto 0);
 		-- output signals
         an: out std_logic_vector(3 downto 0);
         sseg: out std_logic_vector(6 downto 0);
+		z, n, o: out std_logic;
 		output_port: out std_logic
 
 	);
@@ -128,7 +129,6 @@ architecture behavioural of CONTROLLER_file is
 
     
 	signal digit3, digit2, digit1, digit0: std_logic_vector(3 downto 0);
-    signal z, n, o: std_logic;
 	-- FETCH
 	signal brch_addr, CPC, IR_ROM, IR_RAM, IR: std_logic_vector(15 downto 0);
 	signal brch_en, stall: std_logic;
@@ -167,27 +167,92 @@ architecture behavioural of CONTROLLER_file is
 
 	process(clk_display) begin
 		if (clk_display = '0' and clk_display'event) then
-			if (btn0 = '0' and btn1 = '0') then
+			if (btn = "0000") then			-- CPC
                 digit3 <= CPC(15 downto 12);
                 digit2 <= CPC(11 downto 8);
                 digit1 <= CPC(7 downto 4);
                 digit0 <= CPC(3 downto 0);
-            elsif (btn0 = '1' and btn1 ='0') then
+            elsif (btn = "0001") then		-- IR_ROM
                 digit3 <= IR_ROM(15 downto 12);
                 digit2 <= IR_ROM(11 downto 8);
                 digit1 <= IR_ROM(7 downto 4);
                 digit0 <= IR_ROM(3 downto 0);
-            elsif (btn0 = '0' and btn1 ='1') then
-                digit3 <= out1(15 downto 12);
-                digit2 <= out1(11 downto 8);
-                digit1 <= out1(7 downto 4);
-                digit0 <= out1(3 downto 0);
-            else
-                digit3 <= brch_addr(15 downto 12);
-                digit2 <= brch_addr(11 downto 8);
-                digit1 <= brch_addr(7 downto 4);
-                digit0 <= brch_addr(3 downto 0);
-            end if;
+            elsif (btn = "0010") then		-- IR_RAM
+                digit3 <= IR_RAM(15 downto 12);
+                digit2 <= IR_RAM(11 downto 8);
+                digit1 <= IR_RAM(7 downto 4);
+                digit0 <= IR_RAM(3 downto 0);
+			elsif (btn = "0011") then		-- IR
+                digit3 <= IR(15 downto 12);
+                digit2 <= IR(11 downto 8);
+                digit1 <= IR(7 downto 4);
+                digit0 <= IR(3 downto 0);
+			elsif (btn = "0100") then		-- rb index
+				digit3 <= "0000";
+				digit2 <= "0000";
+				digit1 <= "0000";
+				digit0 <= '0' & rb_idx;
+			elsif (btn = "0101") then		-- rc index
+				digit3 <= "0000";
+				digit2 <= "0000";
+				digit1 <= "0000";
+				digit0 <= '0' & rc_idx;
+			elsif (btn = "0101") then		-- rb value
+				digit3 <= rb_val(15 downto 12);
+				digit2 <= rb_val(11 downto 8);
+				digit1 <= rb_val(7 downto 4);
+				digit0 <= rb_val(3 downto 0);
+			elsif (btn = "0110") then		-- rc value
+				digit3 <= rc_val(15 downto 12);
+				digit2 <= rc_val(11 downto 8);
+				digit1 <= rc_val(7 downto 4);
+				digit0 <= rc_val(3 downto 0);
+			elsif (btn = "0111") then		-- in1 of ALU
+				digit3 <= in1(15 downto 12);
+				digit2 <= in1(11 downto 8);
+				digit1 <= in1(7 downto 4);
+				digit0 <= in1(3 downto 0);
+			elsif (btn = "1000") then		-- in2 of ALU
+				digit3 <= in2(15 downto 12);
+				digit2 <= in2(11 downto 8);
+				digit1 <= in2(7 downto 4);
+				digit0 <= in2(3 downto 0);
+			elsif (btn = "1001") then		-- alu_mode of ALU
+				digit3 <= "0000";
+				digit2 <= "0000";
+				digit1 <= "0000";
+				digit0 <= '0' & alu_mode;	
+			elsif (btn = "1010") then		-- shift_count of ALU
+				digit3 <= "0000";
+				digit2 <= "0000";
+				digit1 <= "0000";
+				digit0 <= shift_count;	
+			elsif (btn = "1011") then		-- out1 of ALU
+				digit3 <= "0000";
+				digit2 <= "0000";
+				digit1 <= "0000";
+				digit0 <= '0' & alu_mode;	
+			elsif (btn = "1100") then		-- brch_en, stall
+				digit3 <= "000" & brch_en;
+				digit2 <= "0000";
+				digit1 <= "0000";
+				digit0 <= "000" & stall;
+			elsif (btn = "1101") then		-- brch_addr
+				digit3 <= brch_addr(15 downto 12);
+				digit2 <= brch_addr(11 downto 8);
+				digit1 <= brch_addr(7 downto 4);
+				digit0 <= brch_addr(3 downto 0);
+			elsif (btn = "1110") then		-- wr_en, ra_idx
+				digit3 <= "000" & wr_en;
+				digit2 <= "0000";
+				digit1 <= "0000";
+				digit0 <= '0' & ra_idx;
+			elsif (btn = "1111") then		-- ra_val
+				digit3 <= ra_val(15 downto 12);
+				digit2 <= ra_val(11 downto 8);
+				digit1 <= ra_val(7 downto 4);
+				digit0 <= ra_val(3 downto 0);
+			end if;
 		end if;
 	end process;
 
@@ -198,36 +263,36 @@ architecture behavioural of CONTROLLER_file is
 			z <= z_flag;
 			n <= n_flag;
 			o <= o_flag;
-			
+			shift_count <= "0000";
+			ra_val <= X"0000";
+			in2 <= X"0000";
+			stall <= '0';
+			wr_en <= '0';
+			ra_idx_execute <= "1000";
+			rb_idx_execute <= "1000";
+			rc_idx_execute <= "1000";
+			brch_en_memoryaccess <= '0';
+
 			if (rst='1') then
 				IR_writeback <= X"0000";
 				IR_memoryaccess <= X"0000";
 				IR_execute <= X"0000";
-				wr_en <= '0';
 				n <= '0';
 				z <= '0';
 				o <= '0';
 				alu_mode <= "000";
-				shift_count <= "0000";
-				ra_idx_execute <= "1000";
-				rb_idx_execute <= "1000";
-				rc_idx_execute <= "1000";
 				ra_idx_memoryaccess <= "1000";
 				rb_idx_memoryaccess <= "1000";
 				rc_idx_memoryaccess <= "1000";
 				ra_idx_writeback <= "1000";
 				rb_idx_writeback <= "1000";
 				rc_idx_writeback <= "1000";
-				stall <= '0';
+				
 
 			else
 				-- code for DECODE stage
 				IR_execute <= IR;
 				CPC_execute <= CPC;
-				stall <= '0';
-				ra_idx_execute <= "1000";
-				rb_idx_execute <= "1000";
-				rc_idx_execute <= "1000";
 				case IR(15 downto 9) is
 					when "0000001" => -- ADD
 						rb_idx <= IR(5 downto 3);
@@ -320,7 +385,6 @@ architecture behavioural of CONTROLLER_file is
 				ra_idx_memoryaccess <= ra_idx_execute;
 				rb_idx_memoryaccess <= rb_idx_execute;
 				rc_idx_memoryaccess <= rc_idx_execute;
-				brch_en_memoryaccess <= '0';
 				brch_addr <= out1;
 				case IR_execute(15 downto 9) is
 					when "0000000" => --NOP
@@ -1001,7 +1065,6 @@ architecture behavioural of CONTROLLER_file is
 				end case;
 
 				-- code for WRITE BACK stage
-				wr_en <= '0';
 				case IR_writeback(15 downto 9) is
 					when "0000000" => --NOP
 					when "0000001" => -- ADD
