@@ -166,6 +166,22 @@ architecture behavioural of CONTROLLER_file is
     DISPLAY_module: display_controller port map(clk_display, rst, digit3, digit2, digit1, digit0, an, sseg); 
 
 	process(clk_display) begin
+	    -- 0000: CPC
+	    -- 0001: IR_ROM
+	    -- 0010: IR_writeback
+	    -- 0011: IR_memoryaccess
+	    -- 0100: rb_idx
+	    -- 0101: rc_idx
+	    -- 0110: rb_val
+	    -- 0111: rc_val
+	    -- 1000: in1
+	    -- 1001: in2
+	    -- 1010: alu_mode, shift_count
+	    -- 1011: out1
+	    -- 1100: brch_en, stall
+	    -- 1101: brch_addr
+	    -- 1110: wr_en, ra_idx
+	    -- 1111: ra_val
 		if (clk_display = '0' and clk_display'event) then
 			if (btn = "0000") then			-- CPC
                 digit3 <= CPC(15 downto 12);
@@ -177,16 +193,16 @@ architecture behavioural of CONTROLLER_file is
                 digit2 <= IR_ROM(11 downto 8);
                 digit1 <= IR_ROM(7 downto 4);
                 digit0 <= IR_ROM(3 downto 0);
-            elsif (btn = "0010") then		-- IR_RAM
-                digit3 <= IR_RAM(15 downto 12);
-                digit2 <= IR_RAM(11 downto 8);
-                digit1 <= IR_RAM(7 downto 4);
-                digit0 <= IR_RAM(3 downto 0);
-			elsif (btn = "0011") then		-- IR
-                digit3 <= IR(15 downto 12);
-                digit2 <= IR(11 downto 8);
-                digit1 <= IR(7 downto 4);
-                digit0 <= IR(3 downto 0);
+            elsif (btn = "0010") then		-- IR_writeback
+                digit3 <= IR_writeback(15 downto 12);
+                digit2 <= IR_writeback(11 downto 8);
+                digit1 <= IR_writeback(7 downto 4);
+                digit0 <= IR_writeback(3 downto 0);
+			elsif (btn = "0011") then		-- IR_memoryaccess
+                digit3 <= IR_memoryaccess(15 downto 12);
+                digit2 <= IR_memoryaccess(11 downto 8);
+                digit1 <= IR_memoryaccess(7 downto 4);
+                digit0 <= IR_memoryaccess(3 downto 0);
 			elsif (btn = "0100") then		-- rb index
 				digit3 <= "0000";
 				digit2 <= "0000";
@@ -197,41 +213,36 @@ architecture behavioural of CONTROLLER_file is
 				digit2 <= "0000";
 				digit1 <= "0000";
 				digit0 <= '0' & rc_idx;
-			elsif (btn = "0101") then		-- rb value
+			elsif (btn = "0110") then		-- rb value
 				digit3 <= rb_val(15 downto 12);
 				digit2 <= rb_val(11 downto 8);
 				digit1 <= rb_val(7 downto 4);
 				digit0 <= rb_val(3 downto 0);
-			elsif (btn = "0110") then		-- rc value
+			elsif (btn = "0111") then		-- rc value
 				digit3 <= rc_val(15 downto 12);
 				digit2 <= rc_val(11 downto 8);
 				digit1 <= rc_val(7 downto 4);
 				digit0 <= rc_val(3 downto 0);
-			elsif (btn = "0111") then		-- in1 of ALU
+			elsif (btn = "1000") then		-- in1 of ALU
 				digit3 <= in1(15 downto 12);
 				digit2 <= in1(11 downto 8);
 				digit1 <= in1(7 downto 4);
 				digit0 <= in1(3 downto 0);
-			elsif (btn = "1000") then		-- in2 of ALU
+			elsif (btn = "1001") then		-- in2 of ALU
 				digit3 <= in2(15 downto 12);
 				digit2 <= in2(11 downto 8);
 				digit1 <= in2(7 downto 4);
 				digit0 <= in2(3 downto 0);
-			elsif (btn = "1001") then		-- alu_mode of ALU
-				digit3 <= "0000";
+			elsif (btn = "1010") then		-- alu_mode, shift_count of ALU
+				digit3 <= '0' & alu_mode;
 				digit2 <= "0000";
 				digit1 <= "0000";
-				digit0 <= '0' & alu_mode;	
-			elsif (btn = "1010") then		-- shift_count of ALU
-				digit3 <= "0000";
-				digit2 <= "0000";
-				digit1 <= "0000";
-				digit0 <= shift_count;	
+				digit0 <= shift_count; 	
 			elsif (btn = "1011") then		-- out1 of ALU
-				digit3 <= "0000";
-				digit2 <= "0000";
-				digit1 <= "0000";
-				digit0 <= '0' & alu_mode;	
+				digit3 <= out1(15 downto 12);
+                digit2 <= out1(11 downto 8);
+                digit1 <= out1(7 downto 4);
+                digit0 <= out1(3 downto 0);
 			elsif (btn = "1100") then		-- brch_en, stall
 				digit3 <= "000" & brch_en;
 				digit2 <= "0000";
@@ -265,6 +276,10 @@ architecture behavioural of CONTROLLER_file is
 			o <= o_flag;
 			shift_count <= "0000";
 			ra_val <= X"0000";
+			ra_idx <= "000";
+			rb_idx <= "000";
+            rc_idx <= "000";
+            in1 <= X"0000";
 			in2 <= X"0000";
 			stall <= '0';
 			wr_en <= '0';
@@ -288,94 +303,148 @@ architecture behavioural of CONTROLLER_file is
 				rb_idx_writeback <= "1000";
 				rc_idx_writeback <= "1000";
 			else
-				-- code for DECODE stage
-				IR_execute <= IR;
-				CPC_execute <= CPC;
-				case IR(15 downto 9) is
+				-- code for WRITE BACK stage
+				case IR_writeback(15 downto 9) is
+					when "0000000" => --NOP
 					when "0000001" => -- ADD
-						rb_idx <= IR(5 downto 3);
-						rc_idx <= IR(2 downto 0);	
-						ra_idx_execute <= '0' & IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(5 downto 3);
-						rc_idx_execute <= '0' & IR(2 downto 0);	
+						ra_idx <= ra_idx_writeback(2 downto 0);
+						ra_val <= alu_dt;
+						wr_en <= '1';
 					when "0000010" => -- SUB
-						rb_idx <= IR(5 downto 3);	
-						rc_idx <= IR(2 downto 0);	
-						ra_idx_execute <= '0' & IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(5 downto 3);
-						rc_idx_execute <= '0' & IR(2 downto 0);			
+						ra_idx <= ra_idx_writeback(2 downto 0);
+						ra_val <= alu_dt;
+						wr_en <= '1';
 					when "0000011" => -- MUL
-						rb_idx <= IR(5 downto 3);	
-						rc_idx <= IR(2 downto 0);
-						ra_idx_execute <= '0' & IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(5 downto 3);
-						rc_idx_execute <= '0' & IR(2 downto 0);					
+						ra_idx <= ra_idx_writeback(2 downto 0);
+						ra_val <= alu_dt;
+						wr_en <= '1';
 					when "0000100" => -- NAND
-						rb_idx <= IR(5 downto 3);	
-						rc_idx <= IR(2 downto 0);
-						ra_idx_execute <= '0' & IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(5 downto 3);
-						rc_idx_execute <= '0' & IR(2 downto 0);	
+						ra_idx <= ra_idx_writeback(2 downto 0);
+						ra_val <= alu_dt;
+						wr_en <= '1';
 					when "0000101" => -- SHL
-						rb_idx <= IR(8 downto 6);
-						ra_idx_execute <= '0' & IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(8 downto 6);
+						ra_idx <= ra_idx_writeback(2 downto 0);
+						ra_val <= alu_dt;
+						wr_en <= '1';
 					when "0000110" => -- SHR
-						rb_idx <= IR(8 downto 6);
-						ra_idx_execute <= '0' & IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(8 downto 6);
+						ra_idx <= ra_idx_writeback(2 downto 0);
+						ra_val <= alu_dt;
+						wr_en <= '1';
 					when "0000111" => -- TEST
-						rb_idx <= IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(8 downto 6);
+						NULL;
 					when "0100000" => -- OUT
-						rb_idx <= IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(8 downto 6);
+						NULL;
 					when "0100001" => -- IN
-						ra_idx_execute <= '0' & IR(8 downto 6);
+						ra_idx <= ra_idx_writeback(2 downto 0);	
+						ra_val <= X"1234";
+						wr_en <= '1';	
 					when "1000000" => -- BRR
-						short_addr <= IR(8 downto 0);
+					    NULL;
 					when "1000001" => -- BRR.N
-						short_addr <= IR(8 downto 0);
+					    NULL;
 					when "1000010" => -- BRR.Z
-						short_addr <= IR(8 downto 0);
+					    NULL;
 					when "1000011" => -- BR
-						rb_idx <= IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(8 downto 6);
-						short_addr <= IR(5) & IR(5) & IR(5) & IR(5 downto 0);
+					    NULL;
 					when "1000100" => -- BR.N
-						rb_idx <= IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(8 downto 6);
-						short_addr <= IR(5) & IR(5) & IR(5) & IR(5 downto 0);
+					    NULL;
 					when "1000101" => -- BR.Z
-						rb_idx <= IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(8 downto 6);
-						short_addr <= IR(5) & IR(5) & IR(5) & IR(5 downto 0);
+					    NULL;
 					when "1000110" => -- BR.SUB
-						rb_idx <= IR(8 downto 6);
-						rb_idx_execute <= '0' & IR(8 downto 6);
-						ra_idx_execute <= "0111";
-						short_addr <= IR(5) & IR(5) & IR(5) & IR(5 downto 0);
+					    wr_en <= '1';
+					    ra_idx <= ra_idx_writeback(2 downto 0);	
+					    ra_val <= alu_dt;
 					when "1000111" => -- RETURN
-						rb_idx <= "111";
-						rb_idx_execute <= "0111";
+					    NULL;
 					when "0010000" => -- LOAD
-						rb_idx <= IR(5 downto 3);
-						rb_idx_execute <= '0' & IR(5 downto 3);
-						ra_idx_execute <= '0' & IR(8 downto 6);
+						ra_idx <= ra_idx_writeback(2 downto 0);
+						ra_val <= mem_dt;
+						wr_en <= '1';
 					when "0010001" => -- STORE
-						rb_idx <= IR(8 downto 6);	-- dest
-						rb_idx_execute <= '0' & IR(8 downto 6);
-						rc_idx <= IR(5 downto 3);	-- src
-						rc_idx_execute <= '0' & IR(5 downto 3);
+						NULL;
 					when "0010010" => --LOADIMM
-					    rb_idx <= "111";
-                        rb_idx_execute <= "0111";
-						ra_idx_execute <= "0111";
+						ra_idx <= "111";
+						if (IR_writeback(8) = '1') then
+							ra_val <= IR_writeback(7 downto 0) & alu_dt(7 downto 0);
+						else
+							ra_val <= alu_dt(15 downto 8) & IR_writeback(7 downto 0);
+						end if;
+						wr_en <= '1';
 					when "0010011" => --MOV
-						rb_idx <= IR(5 downto 3);
-						rb_idx_execute <= '0' & IR(5 downto 3);
-						ra_idx_execute <= '0' & IR(8 downto 6);
-					when others => NULL;	
+						ra_idx <= ra_idx_writeback(2 downto 0);
+						ra_val <= alu_dt;
+						wr_en <= '1';
+					when others => NULL;
+				end case;
+				
+				-- code for MEMORY ACCESS stage
+				IR_writeback <= IR_memoryaccess;
+				ra_idx_writeback <= ra_idx_memoryaccess;
+				rb_idx_writeback <= rb_idx_memoryaccess;
+				rc_idx_writeback <= rc_idx_memoryaccess;
+				alu_dt <= out1;
+				wr_mem_en <= "0";
+				if (brch_en_memoryaccess = '1') then
+					-- clear instruction in previous stages as we have branched
+					IR_memoryaccess <= X"0000";
+					ra_idx_memoryaccess <= "1000";
+					rb_idx_memoryaccess <= "1000";
+					rc_idx_memoryaccess <= "1000";
+					brch_en_memoryaccess <= '0';
+
+					IR_execute <= X"0000";
+					ra_idx_execute <= "1000";
+					rb_idx_execute <= "1000";
+					rc_idx_execute <= "1000";
+				end if;
+				case IR_memoryaccess(15 downto 9) is
+					when "0000000" => --NOP
+						NULL;
+					when "0000001" => -- ADD
+						NULL;
+					when "0000010" => -- SUB
+						NULL;			
+					when "0000011" => -- MUL
+						NULL;				
+					when "0000100" => -- NAND
+						NULL;				
+					when "0000101" => -- SHL
+						NULL;				
+					when "0000110" => -- SHR
+						NULL;			
+					when "0000111" => -- TEST
+						NULL;				
+					when "0100000" => -- OUT
+						output_port <= out1(0);
+					when "0100001" => -- IN
+						NULL;
+					when "1000000" => -- BRR
+						NULL;
+					when "1000001" => -- BRR.N
+						NULL;
+					when "1000010" => -- BRR.Z
+						NULL;
+					when "1000011" => -- BR
+						NULL;
+					when "1000100" => -- BR.N
+						NULL;
+					when "1000101" => -- BR.Z
+						NULL;
+					when "1000110" => -- BR.SUB
+						NULL;
+					when "1000111" => -- RETURN
+					    NULL;
+					when "0010000" => -- LOAD
+						addr_dt <= out1;
+					when "0010001" => -- STORE
+						addr_dt <= out1;	-- dest
+						din_dt <= out2;		-- src
+						wr_mem_en <= "1";
+					when "0010010" => --LOADIMM
+						alu_dt <= out1;
+					when "0010011" => --MOV
+						alu_dt <= out1;
+					when others => NULL;
 				end case;
 				
 				-- code for EXECUTE stage
@@ -990,151 +1059,96 @@ architecture behavioural of CONTROLLER_file is
 						end if;		
 					when others => NULL;				
 				end case;
-				
 
-				-- code for MEMORY ACCESS stage
-				IR_writeback <= IR_memoryaccess;
-				ra_idx_writeback <= ra_idx_memoryaccess;
-				rb_idx_writeback <= rb_idx_memoryaccess;
-				rc_idx_writeback <= rc_idx_memoryaccess;
-				alu_dt <= out1;
-				wr_mem_en <= "0";
-				if (brch_en_memoryaccess = '1') then
-					-- clear instruction in previous stages as we have branched
-					IR_memoryaccess <= X"0000";
-					ra_idx_memoryaccess <= "1000";
-					rb_idx_memoryaccess <= "1000";
-					rc_idx_memoryaccess <= "1000";
-					brch_en_memoryaccess <= '0';
-
-					IR_execute <= X"0000";
-					ra_idx_execute <= "1000";
-					rb_idx_execute <= "1000";
-					rc_idx_execute <= "1000";
-				end if;
-				case IR_memoryaccess(15 downto 9) is
-					when "0000000" => --NOP
-						NULL;
-					when "0000001" => -- ADD
-						NULL;
-					when "0000010" => -- SUB
-						NULL;			
-					when "0000011" => -- MUL
-						NULL;				
-					when "0000100" => -- NAND
-						NULL;				
-					when "0000101" => -- SHL
-						NULL;				
-					when "0000110" => -- SHR
-						NULL;			
-					when "0000111" => -- TEST
-						NULL;				
-					when "0100000" => -- OUT
-						output_port <= out1(0);
-					when "0100001" => -- IN
-						NULL;
-					when "1000000" => -- BRR
-						NULL;
-					when "1000001" => -- BRR.N
-						NULL;
-					when "1000010" => -- BRR.Z
-						NULL;
-					when "1000011" => -- BR
-						NULL;
-					when "1000100" => -- BR.N
-						NULL;
-					when "1000101" => -- BR.Z
-						NULL;
-					when "1000110" => -- BR.SUB
-						NULL;
-					when "1000111" => -- RETURN
-					    NULL;
-					when "0010000" => -- LOAD
-						addr_dt <= out1;
-					when "0010001" => -- STORE
-						addr_dt <= out1;	-- dest
-						din_dt <= out2;		-- src
-						wr_mem_en <= "1";
-					when "0010010" => --LOADIMM
-						alu_dt <= out1;
-					when "0010011" => --MOV
-						alu_dt <= out1;
-					when others => NULL;
-				end case;
-
-				-- code for WRITE BACK stage
-				case IR_writeback(15 downto 9) is
-					when "0000000" => --NOP
-					when "0000001" => -- ADD
-						ra_idx <= ra_idx_writeback(2 downto 0);
-						ra_val <= alu_dt;
-						wr_en <= '1';
-					when "0000010" => -- SUB
-						ra_idx <= ra_idx_writeback(2 downto 0);
-						ra_val <= alu_dt;
-						wr_en <= '1';
-					when "0000011" => -- MUL
-						ra_idx <= ra_idx_writeback(2 downto 0);
-						ra_val <= alu_dt;
-						wr_en <= '1';
-					when "0000100" => -- NAND
-						ra_idx <= ra_idx_writeback(2 downto 0);
-						ra_val <= alu_dt;
-						wr_en <= '1';
-					when "0000101" => -- SHL
-						ra_idx <= ra_idx_writeback(2 downto 0);
-						ra_val <= alu_dt;
-						wr_en <= '1';
-					when "0000110" => -- SHR
-						ra_idx <= ra_idx_writeback(2 downto 0);
-						ra_val <= alu_dt;
-						wr_en <= '1';
-					when "0000111" => -- TEST
-						NULL;
-					when "0100000" => -- OUT
-						NULL;
-					when "0100001" => -- IN
-						ra_idx <= ra_idx_writeback(2 downto 0);	
-						ra_val <= input_port & "000000";
-						wr_en <= '1';	
-					when "1000000" => -- BRR
-					    NULL;
-					when "1000001" => -- BRR.N
-					    NULL;
-					when "1000010" => -- BRR.Z
-					    NULL;
-					when "1000011" => -- BR
-					    NULL;
-					when "1000100" => -- BR.N
-					    NULL;
-					when "1000101" => -- BR.Z
-					    NULL;
-					when "1000110" => -- BR.SUB
-					    wr_en <= '1';
-					    ra_idx <= ra_idx_writeback(2 downto 0);	
-					    ra_val <= alu_dt;
-					when "1000111" => -- RETURN
-					    NULL;
-					when "0010000" => -- LOAD
-						ra_idx <= ra_idx_writeback(2 downto 0);
-						ra_val <= mem_dt;
-						wr_en <= '1';
-					when "0010001" => -- STORE
-						NULL;
-					when "0010010" => --LOADIMM
-						ra_idx <= "111";
-						if (IR_writeback(8) = '1') then
-							ra_val <= IR_writeback(7 downto 0) & alu_dt(7 downto 0);
-						else
-							ra_val <= alu_dt(15 downto 8) & IR_writeback(7 downto 0);
-						end if;
-						wr_en <= '1';
-					when "0010011" => --MOV
-						ra_idx <= ra_idx_writeback(2 downto 0);
-						ra_val <= alu_dt;
-						wr_en <= '1';
-					when others => NULL;
-				end case;
+				-- code for DECODE stage
+                IR_execute <= IR;
+                CPC_execute <= CPC;
+                case IR(15 downto 9) is
+                    when "0000001" => -- ADD
+                        rb_idx <= IR(5 downto 3);
+                        rc_idx <= IR(2 downto 0);    
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(5 downto 3);
+                        rc_idx_execute <= '0' & IR(2 downto 0);    
+                    when "0000010" => -- SUB
+                        rb_idx <= IR(5 downto 3);    
+                        rc_idx <= IR(2 downto 0);    
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(5 downto 3);
+                        rc_idx_execute <= '0' & IR(2 downto 0);            
+                    when "0000011" => -- MUL
+                        rb_idx <= IR(5 downto 3);    
+                        rc_idx <= IR(2 downto 0);
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(5 downto 3);
+                        rc_idx_execute <= '0' & IR(2 downto 0);                    
+                    when "0000100" => -- NAND
+                        rb_idx <= IR(5 downto 3);    
+                        rc_idx <= IR(2 downto 0);
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(5 downto 3);
+                        rc_idx_execute <= '0' & IR(2 downto 0);    
+                    when "0000101" => -- SHL
+                        rb_idx <= IR(8 downto 6);
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                    when "0000110" => -- SHR
+                        rb_idx <= IR(8 downto 6);
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                    when "0000111" => -- TEST
+                        rb_idx <= IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                    when "0100000" => -- OUT
+                        rb_idx <= IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                    when "0100001" => -- IN
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                    when "1000000" => -- BRR
+                        short_addr <= IR(8 downto 0);
+                    when "1000001" => -- BRR.N
+                        short_addr <= IR(8 downto 0);
+                    when "1000010" => -- BRR.Z
+                        short_addr <= IR(8 downto 0);
+                    when "1000011" => -- BR
+                        rb_idx <= IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                        short_addr <= IR(5) & IR(5) & IR(5) & IR(5 downto 0);
+                    when "1000100" => -- BR.N
+                        rb_idx <= IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                        short_addr <= IR(5) & IR(5) & IR(5) & IR(5 downto 0);
+                    when "1000101" => -- BR.Z
+                        rb_idx <= IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                        short_addr <= IR(5) & IR(5) & IR(5) & IR(5 downto 0);
+                    when "1000110" => -- BR.SUB
+                        rb_idx <= IR(8 downto 6);
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                        ra_idx_execute <= "0111";
+                        short_addr <= IR(5) & IR(5) & IR(5) & IR(5 downto 0);
+                    when "1000111" => -- RETURN
+                        rb_idx <= "111";
+                        rb_idx_execute <= "0111";
+                    when "0010000" => -- LOAD
+                        rb_idx <= IR(5 downto 3);
+                        rb_idx_execute <= '0' & IR(5 downto 3);
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                    when "0010001" => -- STORE
+                        rb_idx <= IR(8 downto 6);    -- dest
+                        rb_idx_execute <= '0' & IR(8 downto 6);
+                        rc_idx <= IR(5 downto 3);    -- src
+                        rc_idx_execute <= '0' & IR(5 downto 3);
+                    when "0010010" => --LOADIMM
+                        rb_idx <= "111";
+                        rb_idx_execute <= "0111";
+                        ra_idx_execute <= "0111";
+                    when "0010011" => --MOV
+                        rb_idx <= IR(5 downto 3);
+                        rb_idx_execute <= '0' & IR(5 downto 3);
+                        ra_idx_execute <= '0' & IR(8 downto 6);
+                    when others => NULL;    
+                end case;
 			end if;
 		end if;
     end process;
