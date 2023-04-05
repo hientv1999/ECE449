@@ -287,8 +287,6 @@ architecture behavioural of CONTROLLER_file is
 				ra_idx_writeback <= "1000";
 				rb_idx_writeback <= "1000";
 				rc_idx_writeback <= "1000";
-				
-
 			else
 				-- code for DECODE stage
 				IR_execute <= IR;

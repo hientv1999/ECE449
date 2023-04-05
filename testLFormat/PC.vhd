@@ -18,7 +18,7 @@ end PC_file;
 architecture behavioural of PC_file is
 
 --PC signal 
-signal current_PC, next_PC: std_logic_vector(15 downto 0);
+signal current_PC: std_logic_vector(15 downto 0);
 
 begin
     process (clk) begin
@@ -26,18 +26,14 @@ begin
         if (clk = '0' and clk'event) then
             if(rst='1') then
                 current_PC <= X"0000";
-                next_PC <= X"0002";
             else
                 if (stall = '1') then
                     current_PC <= current_PC;
-                    next_PC <= std_logic_vector(signed(current_PC) + 2);
                 else
                     if (brch_en = '1') then
                         current_PC <= brch_addr;
-                        next_PC <= std_logic_vector(signed(brch_addr) + 2);
                     else
-                        current_PC <= next_PC;
-                        next_PC <= std_logic_vector(signed(next_PC) + 2);
+                        current_PC <= std_logic_vector(signed(current_PC) + 2);
                     end if;
                 end if;
             end if;
