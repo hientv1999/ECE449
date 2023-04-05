@@ -161,7 +161,7 @@ architecture behavioural of CONTROLLER_file is
     ALU_module: ALU_file port map(in1, in2, alu_mode, shift_count, rst, clk, out1, z_flag, n_flag, o_flag);
     SIGNEXT_module: SIGNEXT_file port map(short_addr, rst, clk, ext_addr);
     RAM_module: RAM_file port map(addr_dt, CPC, din_dt, wr_mem_en, rst, clk, mem_dt, IR_RAM);
-    ROM_module: ROM_file port map(addr_dt, rst, clk, IR_ROM);
+    ROM_module: ROM_file port map(CPC, rst, clk, IR_ROM);
     MUX_ROMRAM: MUX_file port map(IR_ROM, IR_RAM, CPC(10), IR);
     DISPLAY_module: display_controller port map(clk_display, rst, digit3, digit2, digit1, digit0, an, sseg); 
 
