@@ -1,29 +1,53 @@
-; ECE 449
-; The factorial of IN input number
-; OUT(r1)=IN*(IN-1)*(IN-2)*…*2
-; This loop should run (N-1) times
+LedDisplay:	equ		0xFFF2
+DipSwitches:	equ		0xFFF0
+DipSwitchMask:	equ		07			; Binary multiple as a mask
 
 
+		org		0x0000
+		.CODE
+main:	loadimm.upper	DipSwitches.hi
+		loadimm.lower	DipSwitches.lo
+		load		r6, r7
 
-ORG 0x210
-.CODE
-START:
 
-		LOADIMM.upper	0x00
-		LOADIMM.lower	0x01 
-		MOV r5, r7		; r5 is the decrement value
-		MOV r1, r5 		; r1 is the Factorial variable, so it is initialized to 1
-		MOV r6, r5 		; r6 is initialized to 1, then it’s shifted to get 2
-		SHL r6,1 		; the lowest value to be multiplied by (r6=2)
-		IN  r0
-LOOP:
-		MUL r1,r1,r0    	; the actual multiplication to find the factorial (IN!)
-		SUB r0,r0,r5    	; to move to the lower number (r0-1)
-		SUB r4,r0,r6    	; to check if r0 reaches 2
-		TEST r4 		; IF negative 
-		BRR.N PRINT		; go and output the factorial result
-		BRR LOOP		; ElSE, not done yet, go and continue multiplying 
-PRINT:
-		OUT r1 			; Printout the Factorial
-		BRR START		; goto to the beginning and loop getting new input 
+		loadimm.upper	DipSwitchMask.hi
+		loadimm.lower	DipSwitchMask.lo
+
+		nand		r6, r6, r7		; Nand the switch settings
+		nand		r6, r6, r6		; one's compliment result to and it
+
+
+		loadimm.upper	0x00				
+		loadimm.lower	0x01
+		mov		r4, r7
+		mov		r3, r7
+
+		test		r6
+		brr.z		Done
+
+		sub		r6, r6, r3		; 0 and 1 factorial should return 1
+
+		test		r6
+		brr.z		Done
+
+		loadimm.upper	0x00
+		loadimm.lower	0x02
+		mov		r5, r7
+
+loop:		mul		r4, r4, r5
+		add		r5, r5, r3
+
+		sub		r6, r6, r3
+		test		r6
+		brr.z		Done
+		brr		loop
+
+Done:		loadimm.upper	LedDisplay.hi
+		loadimm.lower	LedDisplay.lo
+
+		store		r7, r4
+		brr		Done
+
 		end
+
+
