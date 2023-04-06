@@ -55,7 +55,7 @@ begin
                             n <= '0';
                         end if;
                         -- calculate overflow flag
-                        if (in1(15) = in2(15) AND output(15) /= in1(15)) then
+                        if (signed(in1) + signed(in2) > X"00007FFF" OR signed(in1) + signed(in2) < X"FFFF1000") then
                             o <= '1';
                         else 
                             o <= '0';
@@ -75,7 +75,7 @@ begin
                             n <= '0';
                         end if;
                         -- calculate overflow flag
-                        if (in1(15) /= in2(15) AND output(15) = in2(15)) then
+                        if (signed(in1) - signed(in2) > X"00007FFF" OR signed(in1) - signed(in2) < X"FFFF1000") then
                             o <= '1';
                         else 
                             o <= '0';
