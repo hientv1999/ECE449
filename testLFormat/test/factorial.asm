@@ -39,10 +39,10 @@ loop:		mul		r4, r4, r5
 
 		sub		r6, r6, r3
 		test		r6
-		brr.z		Done
-		brr		loop
+		brr.z		Done					; 8402
+		brr		loop						; 81FB
 
-Done:		loadimm.upper	LedDisplay.hi
+Done:		loadimm.upper	LedDisplay.hi	; 25FF
 		loadimm.lower	LedDisplay.lo
 
 		store		r7, r4
