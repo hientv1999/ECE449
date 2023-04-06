@@ -478,7 +478,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -505,7 +509,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rc_idx_execute = ra_idx_writeback) then
 							in2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in2 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in2 <= X"000" & num;
+								else
+									in2 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in2 <= input_port & "000000";
 							end if;
@@ -533,7 +541,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -560,7 +572,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rc_idx_execute = ra_idx_writeback) then
 							in2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in2 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in2 <= X"000" & num;
+								else
+									in2 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in2 <= input_port & "000000";
 							end if;
@@ -588,7 +604,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -615,7 +635,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rc_idx_execute = ra_idx_writeback) then
 							in2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in2 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in2 <= X"000" & num;
+								else
+									in2 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in2 <= input_port & "000000";
 							end if;
@@ -643,7 +667,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -670,7 +698,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rc_idx_execute = ra_idx_writeback) then
 							in2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in2 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in2 <= X"000" & num;
+								else
+									in2 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in2 <= input_port & "000000";
 							end if;
@@ -699,7 +731,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -728,7 +764,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -756,7 +796,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -784,7 +828,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -858,7 +906,11 @@ architecture behavioural of CONTROLLER_file is
 							elsif (rb_idx_execute = ra_idx_writeback) then
 								in1 <= alu_dt;
 								if (IR_writeback(15 downto 9) = "0010000") then
-									in1 <= mem_dt;
+									if (out1 = X"FFF0") then
+										in1 <= X"000" & num;
+									else
+										in1 <= mem_dt;
+									end if;
 								elsif (IR_writeback(15 downto 9) = "0100001") then
 									in1 <= input_port & "000000";
 								end if;
@@ -895,7 +947,11 @@ architecture behavioural of CONTROLLER_file is
 							elsif (rb_idx_execute = ra_idx_writeback) then
 								in1 <= alu_dt;
 								if (IR_writeback(15 downto 9) = "0010000") then
-									in1 <= mem_dt;
+									if (out1 = X"FFF0") then
+										in1 <= X"000" & num;
+									else
+										in1 <= mem_dt;
+									end if;
 								elsif (IR_writeback(15 downto 9) = "0100001") then
 									in1 <= input_port & "000000";
 								end if;
@@ -931,7 +987,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -963,7 +1023,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -991,7 +1055,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -1019,7 +1087,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
@@ -1046,7 +1118,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rc_idx_execute = ra_idx_writeback) then
 							out2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								out2 <= mem_dt;
+								if (out1 = X"FFF0") then
+									out2 <= X"000" & num;
+								else
+									out2 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								out2 <= input_port & "000000";
 							end if;
@@ -1086,13 +1162,24 @@ architecture behavioural of CONTROLLER_file is
 								in2 <= X"00" & IR_execute(7 downto 0);
 							end if;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								if (IR_execute(8) = '1') then
-									in1 <= X"00" & mem_dt(7 downto 0);
-									in2 <= IR_execute(7 downto 0) & X"00";
+								if (out1 = X"FFF0") then
+									if (IR_execute(8) = '1') then
+										in1 <= X"000" & num;
+										in2 <= IR_execute(7 downto 0) & X"00";
+									else
+										in1 <= X"0000";
+										in2 <= X"00" & IR_execute(7 downto 0);
+									end if;
 								else
-									in1 <= mem_dt(15 downto 8) & X"00";
-									in2 <= X"00" & IR_execute(7 downto 0);
+									if (IR_execute(8) = '1') then
+										in1 <= X"00" & mem_dt(7 downto 0);
+										in2 <= IR_execute(7 downto 0) & X"00";
+									else
+										in1 <= mem_dt(15 downto 8) & X"00";
+										in2 <= X"00" & IR_execute(7 downto 0);
+									end if;
 								end if;
+								
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								if (IR_execute(8) = '1') then
 									in1 <= X"00" & input_port(1 downto 0) & "000000";
@@ -1132,7 +1219,11 @@ architecture behavioural of CONTROLLER_file is
 						elsif (rb_idx_execute = ra_idx_writeback) then
 							in1 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								if (out1 = X"FFF0") then
+									in1 <= X"000" & num;
+								else
+									in1 <= mem_dt;
+								end if;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
 								in1 <= input_port & "000000";
 							end if;
