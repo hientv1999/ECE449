@@ -358,7 +358,7 @@ architecture behavioural of CONTROLLER_file is
 					    NULL;
 					when "0010000" => -- LOAD
 						if (alu_dt = X"FFF0") then
-							ra_val <= alu_dt;
+							ra_val <= X"000" & num;
 						else
 							ra_val <= mem_dt;
 						end if;
