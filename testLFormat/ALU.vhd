@@ -12,6 +12,7 @@ entity ALU_file is
         shift_count: in std_logic_vector(3 downto 0);
         rst : in std_logic; --clock
         clk: in std_logic;  --reset
+        hold_flag: in std_logic;
         --output signals
         result: out std_logic_vector(15 downto 0); 
         z_flag: out std_logic; 
@@ -593,6 +594,11 @@ begin
                         n <= n;
                         o <= o;
                 end case;
+                if (hold_flag = '1') then
+                    z <= z;
+                    n <= n;
+                    o <= o;
+                end if;
             end if;
         end if;
     end process;

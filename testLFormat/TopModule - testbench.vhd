@@ -37,7 +37,7 @@ architecture behavioural of test_controller_sub is
     end process;      
 
     process begin 
-        rst <= '1'; btn <= "0011"; num <= "0101"; input_port <= "0000000000"; wait until (falling_edge(clk)); 
+        rst <= '1'; btn <= "0011"; num <= "0111"; input_port <= "0000000000"; wait until (falling_edge(clk)); 
         rst <= '0'; wait until (falling_edge(clk)); 
         wait; 
     end process; 
