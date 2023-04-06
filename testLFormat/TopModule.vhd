@@ -500,17 +500,17 @@ architecture behavioural of CONTROLLER_file is
 								rc_idx_execute <= rc_idx_execute;
 								rc_idx_execute <= rc_idx_execute;
 							else
-								in1 <= out1;
+								in2 <= out1;
 							end if;
 						elsif (rc_idx_execute = ra_idx_writeback) then
-							in1 <= alu_dt;
+							in2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								in2 <= mem_dt;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
-								in1 <= input_port & "000000";
+								in2 <= input_port & "000000";
 							end if;
 						else
-							in1 <= rc_val;	
+							in2 <= rc_val;	
 						end if;
 					when "0000010" => -- SUB
 						alu_mode <= "010";	
@@ -555,17 +555,17 @@ architecture behavioural of CONTROLLER_file is
 								rc_idx_execute <= rc_idx_execute;
 								rc_idx_execute <= rc_idx_execute;
 							else
-								in1 <= out1;
+								in2 <= out1;
 							end if;
 						elsif (rc_idx_execute = ra_idx_writeback) then
-							in1 <= alu_dt;
+							in2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								in2 <= mem_dt;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
-								in1 <= input_port & "000000";
+								in2 <= input_port & "000000";
 							end if;
 						else
-							in1 <= rc_val;	
+							in2 <= rc_val;	
 						end if;		
 					when "0000011" => -- MUL
 						alu_mode <= "011";	
@@ -610,17 +610,17 @@ architecture behavioural of CONTROLLER_file is
 								rc_idx_execute <= rc_idx_execute;
 								rc_idx_execute <= rc_idx_execute;
 							else
-								in1 <= out1;
+								in2 <= out1;
 							end if;
 						elsif (rc_idx_execute = ra_idx_writeback) then
-							in1 <= alu_dt;
+							in2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								in2 <= mem_dt;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
-								in1 <= input_port & "000000";
+								in2 <= input_port & "000000";
 							end if;
 						else
-							in1 <= rc_val;	
+							in2 <= rc_val;	
 						end if;			
 					when "0000100" => -- NAND
 						alu_mode <= "100";	
@@ -665,17 +665,17 @@ architecture behavioural of CONTROLLER_file is
 								rc_idx_execute <= rc_idx_execute;
 								rc_idx_execute <= rc_idx_execute;
 							else
-								in1 <= out1;
+								in2 <= out1;
 							end if;
 						elsif (rc_idx_execute = ra_idx_writeback) then
-							in1 <= alu_dt;
+							in2 <= alu_dt;
 							if (IR_writeback(15 downto 9) = "0010000") then
-								in1 <= mem_dt;
+								in2 <= mem_dt;
 							elsif (IR_writeback(15 downto 9) = "0100001") then
-								in1 <= input_port & "000000";
+								in2 <= input_port & "000000";
 							end if;
 						else
-							in1 <= rc_val;	
+							in2 <= rc_val;	
 						end if;			
 					when "0000101" => -- SHL
 						shift_count <= IR_execute(3 downto 0);
