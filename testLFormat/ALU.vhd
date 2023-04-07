@@ -595,8 +595,6 @@ begin
                         o <= o;
                 end case;
                 if (hold_flag = '1') then
-                    z <= z;
-                    n <= n;
                     o <= o;
                 end if;
             end if;

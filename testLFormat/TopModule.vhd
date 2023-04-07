@@ -23,7 +23,7 @@ entity CONTROLLER_file is
 		-- output signals
         an: out std_logic_vector(3 downto 0);
         sseg: out std_logic_vector(6 downto 0);
-		z, n, o: out std_logic;
+		z, n, o_led: out std_logic;
 		output_port: out std_logic
 
 	);
@@ -130,6 +130,7 @@ architecture behavioural of CONTROLLER_file is
 
     signal CPU_output: std_logic_vector(15 downto 0);
 	signal digit3, digit2, digit1, digit0: std_logic_vector(3 downto 0);
+	signal o: std_logic;
 	-- FETCH
 	signal brch_addr, CPC, IR_ROM, IR_RAM, IR: std_logic_vector(15 downto 0);
 	signal brch_en, stall: std_logic;
@@ -271,9 +272,6 @@ architecture behavioural of CONTROLLER_file is
         if(clk = '0' and clk'event) then
 			brch_addr <= X"0000";
 			brch_en <= '0';
-			z <= z_flag;
-			n <= n_flag;
-			o <= o_flag;
 			shift_count <= "0000";
 			ra_val <= X"0000";
 			ra_idx <= "000";
@@ -289,6 +287,8 @@ architecture behavioural of CONTROLLER_file is
 			rc_idx_execute <= "1000";
             stall_MUX <= '0';
 			if (rst='1') then
+				o_led <= '0';
+				stall_MUX <= '1';
 				IR_writeback <= X"0000";
 				IR_memoryaccess <= X"0000";
 				IR_execute <= X"0000";
@@ -429,6 +429,12 @@ architecture behavioural of CONTROLLER_file is
 					when "0010001" => -- STORE
 						if (out1 = X"FFF2") then
 							CPU_output <= out2;
+							if (out2 = X"0000") then
+							     z <= '1';
+							else
+							     z <= '0';
+							end if;
+							n <= out2(15);
 						else
 							addr_dt <= out1;	-- dest
 							din_dt <= out2;		-- src
@@ -1327,6 +1333,12 @@ architecture behavioural of CONTROLLER_file is
 						rc_idx_execute <= "1000";
 					end if;    
                 end case;
+                if (o = '1') then
+                    o <= '1';
+                    o_led <= '1';
+                else
+                    o <= o_flag;
+                end if;
 			end if;
 		end if;
     end process;

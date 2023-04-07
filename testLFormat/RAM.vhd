@@ -46,13 +46,13 @@ begin
     BYTE_WRITE_WIDTH_A      => 16,             -- 16-bit data
     ADDR_WIDTH_A            => 16,             -- 16-bit addressing
     READ_RESET_VALUE_A      => "0",            --string
-    READ_LATENCY_A          => 2,              --non-negative integer
+    READ_LATENCY_A          => 1,              --non-negative integer
 
     -- Port B module generics
     READ_DATA_WIDTH_B       => 16,             --positive integer
     ADDR_WIDTH_B            => 16,              --positive integer
     READ_RESET_VALUE_B      => "0",            --string
-    READ_LATENCY_B          => 2               --non-negative integer
+    READ_LATENCY_B          => 1               --non-negative integer
     )
 
     port map (

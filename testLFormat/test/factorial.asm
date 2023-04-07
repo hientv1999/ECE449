@@ -1,6 +1,6 @@
 LedDisplay:	equ		0xFFF2
 DipSwitches:	equ		0xFFF0
-DipSwitchMask:	equ		07			; Binary multiple as a mask
+DipSwitchMask:	equ		15			; Binary multiple as a mask
 
 
 		org		0x0000
@@ -22,7 +22,7 @@ main:	loadimm.upper	DipSwitches.hi
 		mov		r4, r7
 		mov		r3, r7
 
-		test		r6
+		test		r6				; 0F80
 		brr.z		Done
 
 		sub		r6, r6, r3		; 0 and 1 factorial should return 1

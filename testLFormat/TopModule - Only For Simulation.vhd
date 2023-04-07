@@ -21,7 +21,7 @@ entity CONTROLLER_file is
 		input_port: in std_logic_vector(9 downto 0);
 		-- output signals
         digit: out std_logic_vector(15 downto 0);
-		z, n, o: out std_logic;
+		z, n, o_led: out std_logic;
 		output_port: out std_logic
 
 	);
@@ -119,30 +119,31 @@ architecture behavioural of CONTROLLER_file is
     end component;
     
     signal CPU_output: std_logic_vector(15 downto 0);
-	signal digit3, digit2, digit1, digit0: std_logic_vector(3 downto 0);
-	-- FETCH
-	signal brch_addr, CPC, IR_ROM, IR_RAM, IR: std_logic_vector(15 downto 0);
-	signal brch_en, stall: std_logic;
-	-- DECODE
-	signal ra_idx, rb_idx, rc_idx: std_logic_vector(2 downto 0);
-	signal ra_val, rb_val, rc_val: std_logic_vector(15 downto 0);
+    signal digit3, digit2, digit1, digit0: std_logic_vector(3 downto 0);
+    signal o: std_logic;
+    -- FETCH
+    signal brch_addr, CPC, IR_ROM, IR_RAM, IR: std_logic_vector(15 downto 0);
+    signal brch_en, stall: std_logic;
+    -- DECODE
+    signal ra_idx, rb_idx, rc_idx: std_logic_vector(2 downto 0);
+    signal ra_val, rb_val, rc_val: std_logic_vector(15 downto 0);
     signal wr_en: std_logic;
     signal short_addr: std_logic_vector(8 downto 0);
-	-- EXECUTE
-	signal ra_idx_execute, rb_idx_execute, rc_idx_execute: std_logic_vector(3 downto 0);
-	signal in1, in2, IR_execute, ext_addr, CPC_execute: std_logic_vector(15 downto 0);
-	signal z_flag, n_flag, o_flag, stall_MUX, hold_flag: std_logic;
-	signal alu_mode: std_logic_vector(2 downto 0);
-	signal shift_count: std_logic_vector(3 downto 0);
-	-- MEMORY ACCESS
-	signal ra_idx_memoryaccess, rb_idx_memoryaccess, rc_idx_memoryaccess: std_logic_vector(3 downto 0);
-	signal IR_memoryaccess, out1, out2: std_logic_vector(15 downto 0);
-	signal addr_dt, din_dt: std_logic_vector(15 downto 0);
-	-- WRITE BACK
-	signal ra_idx_writeback, rb_idx_writeback, rc_idx_writeback: std_logic_vector(3 downto 0);
-	signal IR_writeback, alu_dt, mem_dt: std_logic_vector(15 downto 0);
-	signal rst_clk, regcea, regceb: std_logic;
-	signal wr_mem_en: std_logic_vector(0 downto 0);
+    -- EXECUTE
+    signal ra_idx_execute, rb_idx_execute, rc_idx_execute: std_logic_vector(3 downto 0);
+    signal in1, in2, IR_execute, ext_addr, CPC_execute: std_logic_vector(15 downto 0);
+    signal z_flag, n_flag, o_flag, stall_MUX, hold_flag: std_logic;
+    signal alu_mode: std_logic_vector(2 downto 0);
+    signal shift_count: std_logic_vector(3 downto 0);
+    -- MEMORY ACCESS
+    signal ra_idx_memoryaccess, rb_idx_memoryaccess, rc_idx_memoryaccess: std_logic_vector(3 downto 0);
+    signal IR_memoryaccess, out1, out2: std_logic_vector(15 downto 0);
+    signal addr_dt, din_dt: std_logic_vector(15 downto 0);
+    -- WRITE BACK
+    signal ra_idx_writeback, rb_idx_writeback, rc_idx_writeback: std_logic_vector(3 downto 0);
+    signal IR_writeback, alu_dt, mem_dt: std_logic_vector(15 downto 0);
+    signal rst_clk, regcea, regceb: std_logic;
+    signal wr_mem_en: std_logic_vector(0 downto 0);
 
 	begin
 	PC_module : PC_file port map(brch_addr, brch_en, rst, clk, stall, CPC);	
@@ -214,9 +215,6 @@ architecture behavioural of CONTROLLER_file is
 		end if;
 			brch_addr <= X"0000";
 			brch_en <= '0';
-			z <= z_flag;
-			n <= n_flag;
-			o <= o_flag;
 			shift_count <= "0000";
 			ra_val <= X"0000";
 			ra_idx <= "000";
@@ -232,6 +230,7 @@ architecture behavioural of CONTROLLER_file is
 			rc_idx_execute <= "1000";
             stall_MUX <= '0';
 			if (rst='1') then
+				stall_MUX <= '1';
 				IR_writeback <= X"0000";
 				IR_memoryaccess <= X"0000";
 				IR_execute <= X"0000";
@@ -372,6 +371,12 @@ architecture behavioural of CONTROLLER_file is
 					when "0010001" => -- STORE
 						if (out1 = X"FFF2") then
 							CPU_output <= out2;
+							if (out2 = X"0000") then
+							     z <= '1';
+							else
+							     z <= '0';
+							end if;
+							n <= out2(15);
 						else
 							addr_dt <= out1;	-- dest
 							din_dt <= out2;		-- src
@@ -1270,6 +1275,12 @@ architecture behavioural of CONTROLLER_file is
 						rc_idx_execute <= "1000";
 					end if;    
                 end case;
+                if (o = '1') then
+                    o <= '1';
+                    o_led <= '1';
+                else
+                    o <= o_flag;
+                end if;
 			end if;
 		end if;
     end process;
