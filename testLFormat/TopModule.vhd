@@ -852,6 +852,7 @@ architecture behavioural of CONTROLLER_file is
 						stall_MUX <= '1';		
 					when "1000001" => -- BRR.N
 					    alu_mode <= "001";
+						hold_flag <= '1';
 					    in1 <= CPC_execute;
 					    if (n_flag = '0') then
                             in2 <= X"0002";
@@ -861,6 +862,7 @@ architecture behavioural of CONTROLLER_file is
 					    end if;
 					when "1000010" => -- BRR.Z
 					    alu_mode <= "001";
+						hold_flag <= '1';
 					    in1 <= CPC_execute;
 					    if (z_flag = '0') then
                             in2 <= X"0002";
@@ -876,6 +878,7 @@ architecture behavioural of CONTROLLER_file is
 						stall_MUX <= '1';					
 					when "1000100" => -- BR.N
 					    alu_mode <= "001";
+						hold_flag <= '1';
 					    if (n_flag = '0') then
 					       in1 <= CPC_execute;
 					       in2 <= X"0002";
@@ -921,6 +924,7 @@ architecture behavioural of CONTROLLER_file is
 					    end if;
 					when "1000101" => -- BR.Z
 					    alu_mode <= "001";
+						hold_flag <= '1';
 					    if (z_flag = '0') then
 					       in1 <= CPC_execute;
 					       in2 <= X"0002";
@@ -960,6 +964,7 @@ architecture behavioural of CONTROLLER_file is
 					    end if;
 					when "1000110" => -- BR.SUB
 						stall_MUX <= '1';
+						hold_flag <= '1';
 					    alu_mode <= "001";
 						if (rb_idx_execute = ra_idx_memoryaccess) then
 							if (IR_memoryaccess(15 downto 9) = "0100001" or IR_memoryaccess(15 downto 9) = "0010000") then
